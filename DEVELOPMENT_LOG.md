@@ -68,6 +68,7 @@ Chronological record of decisions, measurements and corrections. Dates are 2026-
   150-270 ms on the large run; server peak 1.66 GB.
 
 ## Phase 8 - Verification
-- Clean isolated venv install from `requirements-dev.txt` + full test run (see STATUS.md for the result).
-- Competition ranking timing: 11.9 s on an idle machine; 89.9 s measured once while a torch install and the
-  server were running concurrently (resource contention); both well under the 300 s budget.
+- Clean isolated venv (no system packages) installed from `torch` CPU wheel + `requirements-dev.txt`:
+  55/55 Python tests passed. Development environment: 55 Python + 8 frontend tests passed.
+- Competition ranking timing: 11.9 s and 12.25 s (peak 1.41 GB) on an idle machine; 89.9 s measured once while
+  a torch install and the server were running concurrently (resource contention). All under the 300 s budget.

@@ -35,7 +35,6 @@ export function ResultsTable({ runId, rows, mandatoryIds, selected, toggle, sort
             <th>Must-haves</th>
             <th>Relevant skills</th>
             <SortHead id="years_experience" label="Exp." s={sort} onSort={onSort} />
-            <th>Branch</th>
             <th>Assessed</th>
             <th>Flags</th>
             <th><span className="sr-only">Actions</span></th>
@@ -52,12 +51,15 @@ export function ResultsTable({ runId, rows, mandatoryIds, selected, toggle, sort
               </td>
               <td style={{ minWidth: 130 }}><ScoreBar value={r.overall} tone={r.rank && r.rank <= 10 ? "signal" : "ink"} />
                 {r.constraint_factor < 1 && <div className="cell-sub" title={r.constraints_triggered.join(", ")}>× {r.constraint_factor.toFixed(2)} conditions</div>}</td>
-              <td><div>{r.title}</div><div className="cell-sub">{r.company} · {r.city || r.location}</div></td>
-              <td><CoverageDots coverage={r.requirement_coverage} ids={mandatoryIds} /><div className="cell-sub mono">{r.mandatory_met}/{r.mandatory_total}</div></td>
-              <td style={{ maxWidth: 220 }}><div className="chips">{r.relevant_skills.slice(0, 4).map((s) => <span className="chip data" key={s}>{s}</span>)}
-                {r.relevant_skills.length > 4 && <span className="chip">+{r.relevant_skills.length - 4}</span>}</div></td>
+              <td style={{ maxWidth: 240 }}>
+                <div className="ellipsis" title={r.title}>{r.title}</div>
+                <div className="cell-sub ellipsis" title={`${r.company} · ${r.city || r.location}`}>{r.company} · {r.city || r.location}</div>
+                {r.fields_of_study && <div className="cell-sub ellipsis faint" title={r.fields_of_study}>{r.fields_of_study}</div>}
+              </td>
+              <td style={{ whiteSpace: "nowrap" }}><CoverageDots coverage={r.requirement_coverage} ids={mandatoryIds} /> <span className="cell-sub mono">{r.mandatory_met}/{r.mandatory_total}</span></td>
+              <td style={{ maxWidth: 260 }}><div className="chips">{r.relevant_skills.slice(0, 3).map((s) => <span className="chip data" key={s}>{s}</span>)}
+                {r.relevant_skills.length > 3 && <span className="chip" title={r.relevant_skills.slice(3).join(", ")}>+{r.relevant_skills.length - 3}</span>}</div></td>
               <td className="num">{num(r.years_experience)}</td>
-              <td style={{ maxWidth: 160 }} className="cell-sub">{r.fields_of_study || "-"}</td>
               <td className="num">{r.assessment_mean !== null ? `${Math.round(r.assessment_mean)}` : <span className="faint">-</span>}</td>
               <td><FlagIcons codes={r.flag_codes} critical={r.critical_flag} /></td>
               <td><Link to={`/runs/${runId}/candidates/${r.candidate_id}`} className="btn btn-sm btn-ghost" aria-label="Open profile"><Eye size={15} /></Link></td>

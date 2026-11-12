@@ -80,7 +80,7 @@ export default function ComparePage() {
         </div>
       </section>
       <div className="legend"><span><i style={{ background: "var(--data-soft)" }} />skill shared by all</span><span><i style={{ background: "var(--signal-soft)" }} />skill unique to one candidate</span>
-        <span>score values shown as {score100(1)}-point scale</span></div>
+        <span>scores on a 0-100 scale</span></div>
     </div>
   );
 }

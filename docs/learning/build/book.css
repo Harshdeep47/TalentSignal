@@ -1,0 +1,96 @@
+/* Typography and layout for the TalentSignal learning books (printed by Chromium). */
+:root { --ink:#14213d; --ink3:#2c3d66; --signal:#e4572e; --paper:#f6f4ef; --line:#e1ddd2; --muted:#5f6573;
+        --ok:#2a7f62; --warn:#a86c06; --risk:#a8231b; --data:#2b6f8e; }
+@page { size: A4; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: Plex, "Segoe UI", sans-serif; font-size: 10.2pt; line-height: 1.58; color: #1d2433; margin: 0; }
+main { counter-reset: fig; }
+p { margin: 0 0 7pt; orphans: 3; widows: 3; text-align: left; }
+a { color: var(--data); text-decoration: none; }
+strong { color: #121a2c; }
+.mk { font-size: 1px; color: #fff; line-height: 0; letter-spacing: 0; }
+
+/* ---- table of contents ---- */
+.toc { break-after: page; }
+.toc-head { font-size: 26pt; color: var(--ink); margin: 0 0 14pt; border: 0; }
+.toc-part, .toc-sec { display: flex; align-items: baseline; gap: 6pt; break-inside: avoid; }
+.toc-part { font-weight: 600; color: var(--ink); margin-top: 8pt; font-size: 10.5pt; }
+.toc-sec { font-size: 9.3pt; color: #394155; padding-left: 18pt; margin-top: 1.5pt; }
+.toc-num { min-width: 64pt; color: var(--signal); font-weight: 600; }
+.toc-sec .toc-num { min-width: 32pt; color: #8a8f9c; font-weight: 500; }
+.toc-dots { flex: 1; border-bottom: 1px dotted #b9b4a8; transform: translateY(-3pt); }
+.toc-pg { font-family: PlexMono, monospace; font-size: 9pt; min-width: 18pt; text-align: right; }
+
+/* ---- headings ---- */
+h1 { break-before: page; margin: 0 0 18pt; padding: 0 0 12pt; border-bottom: 3px solid var(--ink); }
+h1 .part-label { display: block; font-size: 10pt; letter-spacing: .14em; text-transform: uppercase; color: var(--signal);
+  font-weight: 600; margin-bottom: 6pt; }
+h1 .part-title { display: block; font-size: 25pt; line-height: 1.15; color: var(--ink); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 15pt; color: var(--ink); margin: 20pt 0 8pt; break-after: avoid; line-height: 1.25; }
+h2 .sec-num { color: var(--signal); margin-right: 8pt; font-weight: 600; }
+h3 { font-size: 11.8pt; color: var(--ink3); margin: 15pt 0 5pt; break-after: avoid; }
+h4 { font-size: 10.4pt; color: #2a3247; margin: 11pt 0 4pt; break-after: avoid; text-transform: none; }
+h2 + p, h3 + p { margin-top: 0; }
+
+/* ---- lists ---- */
+ul, ol { margin: 2pt 0 8pt; padding-left: 16pt; }
+li { margin: 1.5pt 0; }
+li > p { margin: 0 0 3pt; }
+
+/* ---- code ---- */
+code { font-family: PlexMono, Consolas, monospace; font-size: 8.6pt; background: #f1eee7; padding: .5pt 3pt; border-radius: 3px;
+  color: #2a2f3d; overflow-wrap: anywhere; }
+.highlight { background: #f8f7f3; border: 1px solid var(--line); border-left: 3px solid var(--ink3); border-radius: 4px;
+  margin: 6pt 0 10pt; padding: 7pt 10pt; break-inside: auto; }
+.highlight pre { margin: 0; font-family: PlexMono, Consolas, monospace; font-size: 8.15pt; line-height: 1.45;
+  white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+.highlight code { background: none; padding: 0; font-size: inherit; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ---- tables ---- */
+table { width: 100%; border-collapse: collapse; margin: 6pt 0 11pt; font-size: 8.7pt; line-height: 1.4; table-layout: auto; }
+th { background: var(--ink); color: #fff; text-align: left; font-weight: 600; padding: 4.5pt 6pt; }
+td { padding: 4pt 6pt; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+tr { break-inside: avoid; }
+tbody tr:nth-child(even) td { background: #faf9f6; }
+td code, th code { font-size: 7.9pt; }
+
+/* ---- diagrams ---- */
+.mermaid { margin: 10pt auto 4pt; text-align: center; break-inside: avoid; break-after: avoid; }
+.mermaid svg { max-width: 100% !important; height: auto; max-height: 205mm; }
+p.caption, .caption { font-size: 8.6pt; color: var(--muted); text-align: center; margin: 0 0 12pt; font-style: italic; }
+
+/* ---- math ---- */
+.arithmatex { overflow-wrap: normal; }
+div.arithmatex { margin: 6pt 0 9pt; break-inside: avoid; }
+.katex { font-size: 1.07em; }
+.katex-display { margin: 4pt 0; }
+
+/* ---- callouts (admonitions) ---- */
+.admonition { border-radius: 5px; padding: 7pt 11pt 4pt; margin: 8pt 0 11pt; break-inside: avoid; border-left: 4px solid;
+  background: #f3f5fa; border-color: var(--ink3); }
+.admonition-title { font-weight: 700; font-size: 8.8pt; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 3pt; color: var(--ink3); }
+.admonition.tip { background: #eaf5f0; border-color: var(--ok); } .admonition.tip .admonition-title { color: var(--ok); }
+.admonition.warning, .admonition.caution { background: #fdf3e2; border-color: var(--warn); }
+.admonition.warning .admonition-title, .admonition.caution .admonition-title { color: var(--warn); }
+.admonition.danger, .admonition.limitation { background: #fbebe9; border-color: var(--risk); }
+.admonition.danger .admonition-title, .admonition.limitation .admonition-title { color: var(--risk); }
+.admonition.example { background: #fdf0eb; border-color: var(--signal); } .admonition.example .admonition-title { color: var(--signal); }
+.admonition.interview { background: #f1eefb; border-color: #5b46a8; } .admonition.interview .admonition-title { color: #5b46a8; }
+.admonition.code-ref { background: #f4f2ec; border-color: #8a8471; } .admonition.code-ref .admonition-title { color: #6b6553; }
+
+/* ---- misc ---- */
+hr { border: 0; border-top: 1px solid var(--line); margin: 14pt 0; }
+blockquote { margin: 8pt 0; padding: 4pt 12pt; border-left: 3px solid var(--signal); color: #3b4254; background: #fbfaf7; }
+dl dt { font-weight: 600; color: var(--ink); margin-top: 5pt; }
+dl dd { margin: 0 0 4pt 14pt; }
+details { margin: 6pt 0; } details summary { font-weight: 600; }
+.pagebreak { break-after: page; }
+img { max-width: 100%; }
+
+.src-caption { font-size: 8pt; color: #6b6553; margin: 9pt 0 -4pt; }
+.src-caption code { font-size: 7.6pt; background: none; padding: 0; }
+
+.task-list-item { list-style: none; margin-left: -14pt; }
+.task-list-control input { display: none; }
+.task-list-indicator::before { content: ""; display: inline-block; width: 8pt; height: 8pt; border: 1.2px solid #2c3d66; border-radius: 2px; margin-right: 6pt; vertical-align: -1pt; }

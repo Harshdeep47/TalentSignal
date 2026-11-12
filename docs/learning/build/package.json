@@ -1,0 +1,5 @@
+{
+  "name": "talentsignal-docs-build",
+  "private": true,
+  "dependencies": { "mermaid": "11.4.1", "katex": "0.16.11" }
+}

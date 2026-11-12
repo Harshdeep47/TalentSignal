@@ -1,0 +1,402 @@
+{
+ "jd": "Search Engineer\nCompany: Example Commerce (product company)\nLocation: Pune, India (Hybrid) | Open to relocation within India\nExperience Required: 4-8 years\n\nWhat you'll do\n- Own the ranking of our product search results.\n- Run offline evaluation and A/B tests before shipping ranking changes.\n\nMust have:\n- Production experience with Elasticsearch or another search engine\n- Experience building ranking or recommendation systems\n- Strong Python\n\nNice to have:\n- Learning-to-rank models such as LightGBM or XGBoost\n\nNotice period: we prefer sub-30-day notice; we can buy out up to 30 days.\n",
+ "spec": {
+  "title": "Search Engineer",
+  "role_families": {
+   "search_ranking": 1.0
+  },
+  "seniority_level": 2,
+  "requirements": [
+   {
+    "id": "information_retrieval",
+    "label": "Information retrieval / search relevance",
+    "importance": "mandatory",
+    "weight": 1.0,
+    "skills": [
+     "Information Retrieval",
+     "Information Retrieval Systems",
+     "BM25",
+     "Search & Discovery"
+    ],
+    "source_text": "Production experience with Elasticsearch or another search engine"
+   },
+   {
+    "id": "python",
+    "label": "Python",
+    "importance": "mandatory",
+    "weight": 1.0,
+    "skills": [
+     "Python"
+    ],
+    "source_text": "Strong Python"
+   },
+   {
+    "id": "ranking_recsys",
+    "label": "Ranking / recommendation systems",
+    "importance": "mandatory",
+    "weight": 1.0,
+    "skills": [
+     "Ranking Systems",
+     "Learning to Rank",
+     "Recommendation Systems",
+     "Content Matching"
+    ],
+    "source_text": "Experience building ranking or recommendation systems"
+   },
+   {
+    "id": "vector_search_infra",
+    "label": "Vector databases / hybrid search infrastructure",
+    "importance": "mandatory",
+    "weight": 1.0,
+    "skills": [
+     "Pinecone",
+     "Weaviate",
+     "Qdrant",
+     "Milvus",
+     "FAISS",
+     "pgvector"
+    ],
+    "source_text": "Production experience with Elasticsearch or another search engine"
+   },
+   {
+    "id": "learning_to_rank_models",
+    "label": "Learning-to-rank models (GBDT / neural)",
+    "importance": "preferred",
+    "weight": 0.5,
+    "skills": [
+     "Learning to Rank"
+    ],
+    "source_text": "Learning-to-rank models such as LightGBM or XGBoost"
+   },
+   {
+    "id": "ranking_evaluation",
+    "label": "Ranking evaluation (NDCG / MRR / MAP, A/B tests)",
+    "importance": "preferred",
+    "weight": 0.35,
+    "skills": [],
+    "source_text": "Run offline evaluation and A/B tests before shipping ranking changes."
+   }
+  ],
+  "experience": {
+   "min_years": 4.0,
+   "max_years": 8.0,
+   "ideal_min": 4.0,
+   "ideal_max": 8.0,
+   "relevant_min_years": null,
+   "hard_min": false,
+   "source_text": "Experience Required: 4-8 years"
+  },
+  "location": {
+   "preferred": [
+    "pune"
+   ],
+   "acceptable": [],
+   "countries": [
+    "India"
+   ],
+   "work_mode": "hybrid",
+   "relocation_considered": true,
+   "visa_sponsorship": null,
+   "source_text": "Location: Pune, India (Hybrid) | Open to relocation within India"
+  },
+  "notice": {
+   "ideal_max_days": 30,
+   "acceptable_max_days": 60,
+   "source_text": "odels such as LightGBM or XGBoost  Notice period: we prefer sub-30-day notice; we can buy out up to 30 days."
+  },
+  "constraints": [],
+  "weights": {
+   "requirements": 0.34,
+   "role_fit": 0.2,
+   "semantic": 0.12,
+   "lexical": 0.05,
+   "experience": 0.1,
+   "engagement": 0.11,
+   "logistics": 0.08
+  },
+  "notes": []
+ },
+ "context": {
+  "as_of_date": "2026-05-25",
+  "semantic_available": true,
+  "weights_used": {
+   "requirements": 0.34,
+   "role_fit": 0.2,
+   "semantic": 0.12,
+   "lexical": 0.05,
+   "experience": 0.1,
+   "engagement": 0.11,
+   "logistics": 0.08
+  },
+  "notes": [],
+  "focus_bounds": [
+   0.6497529315948486,
+   0.8297529315948486
+  ]
+ },
+ "candidates": {
+  "CAND_9000001": {
+   "name": "Asha Rao",
+   "title": "Search Engineer",
+   "rank": 1,
+   "overall": 0.9111,
+   "components": {
+    "requirements": 0.9328,
+    "role_fit": 1.0,
+    "semantic": 0.7129,
+    "lexical": 0.6667,
+    "experience": 0.99,
+    "engagement": 0.8731,
+    "logistics": 1.0
+   },
+   "constraint_factor": 1.0,
+   "title_relevance": 1.0,
+   "career_relevance": 1.0,
+   "relevant_years": 6.0,
+   "mandatory_coverage": 0.9313,
+   "uncorroborated": false,
+   "eng": {
+    "activity_recency": 0.9622,
+    "response_rate": 0.8,
+    "response_speed": 0.8,
+    "open_to_work": 1.0,
+    "interview_reliability": 0.9,
+    "offer_follow_through": 0.8,
+    "recruiter_interest": 0.5507
+   },
+   "log": {
+    "location": 1.0,
+    "notice": 1.0,
+    "work_mode": 1.0
+   },
+   "exp": {
+    "band": 1.0,
+    "relevant": 1.0,
+    "seniority": 0.95
+   },
+   "requirements": {
+    "information_retrieval": {
+     "skill": 0.0,
+     "text": 0.839,
+     "signal": 0.0,
+     "coverage": 0.839
+    },
+    "python": {
+     "skill": 0.9881,
+     "text": 0.75,
+     "signal": 0.0,
+     "coverage": 0.997
+    },
+    "ranking_recsys": {
+     "skill": 0.684,
+     "text": 0.7538,
+     "signal": 0.0,
+     "coverage": 0.9222
+    },
+    "vector_search_infra": {
+     "skill": 0.7781,
+     "text": 0.8512,
+     "signal": 0.0,
+     "coverage": 0.967
+    },
+    "learning_to_rank_models": {
+     "skill": 0.6579,
+     "text": 0.8783,
+     "signal": 0.0,
+     "coverage": 0.9584
+    },
+    "ranking_evaluation": {
+     "skill": 0.0,
+     "text": 0.914,
+     "signal": 0.0,
+     "coverage": 0.914
+    }
+   },
+   "summary": "Top match: Search Engineer at ShopFast (6.0 yrs) meets 4 of 4 must-haves, with Python (expert) and Elasticsearch (advanced, assessed 84/100). Edges out similarly ranked profiles on requirement coverage.",
+   "concerns": [],
+   "missing": [],
+   "flags": []
+  },
+  "CAND_9000002": {
+   "name": "Ravi Menon",
+   "title": "Sales Executive",
+   "rank": 2,
+   "overall": 0.4484,
+   "components": {
+    "requirements": 0.4841,
+    "role_fit": 0.0,
+    "semantic": 0.0,
+    "lexical": 1.0,
+    "experience": 0.64,
+    "engagement": 0.9075,
+    "logistics": 0.875
+   },
+   "constraint_factor": 1.0,
+   "title_relevance": 0.0,
+   "career_relevance": 0.0,
+   "relevant_years": 0.0,
+   "mandatory_coverage": 0.5172,
+   "uncorroborated": true,
+   "eng": {
+    "activity_recency": 1.0,
+    "response_rate": 0.9,
+    "response_speed": 0.8,
+    "open_to_work": 1.0,
+    "interview_reliability": 0.9,
+    "offer_follow_through": 0.8,
+    "recruiter_interest": 0.5507
+   },
+   "log": {
+    "location": 0.75,
+    "notice": 1.0,
+    "work_mode": 1.0
+   },
+   "exp": {
+    "band": 1.0,
+    "relevant": 0.0,
+    "seniority": 0.95
+   },
+   "requirements": {
+    "information_retrieval": {
+     "skill": 0.4884,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.4884
+    },
+    "python": {
+     "skill": 0.4884,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.4884
+    },
+    "ranking_recsys": {
+     "skill": 0.4884,
+     "text": 0.225,
+     "signal": 0.0,
+     "coverage": 0.6035
+    },
+    "vector_search_infra": {
+     "skill": 0.4884,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.4884
+    },
+    "learning_to_rank_models": {
+     "skill": 0.4884,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.4884
+    },
+    "ranking_evaluation": {
+     "skill": 0.0,
+     "text": 0.1,
+     "signal": 0.0,
+     "coverage": 0.1
+    }
+   },
+   "summary": "Weak match: Sales Executive at CloudCo (6.0 yrs) meets 0 of 4 must-haves. Concerns: Job-relevant skills not supported by any related role.",
+   "concerns": [
+    "Job-relevant skills not supported by any related role"
+   ],
+   "missing": [
+    "No platform assessment for the job's key skills"
+   ],
+   "flags": [
+    "uncorroborated_skill_claims"
+   ]
+  },
+  "CAND_9000003": {
+   "name": "Meera Iyer",
+   "title": "Senior Software Engineer",
+   "rank": 3,
+   "overall": 0.3872,
+   "components": {
+    "requirements": 0.2224,
+    "role_fit": 0.35,
+    "semantic": 0.0,
+    "lexical": 0.3333,
+    "experience": 0.99,
+    "engagement": 0.655,
+    "logistics": 0.6736
+   },
+   "constraint_factor": 1.0,
+   "title_relevance": 0.35,
+   "career_relevance": 0.35,
+   "relevant_years": 2.45,
+   "mandatory_coverage": 0.2612,
+   "uncorroborated": false,
+   "eng": {
+    "activity_recency": 0.4188,
+    "response_rate": 0.5,
+    "response_speed": 0.8,
+    "open_to_work": 1.0,
+    "interview_reliability": 0.9,
+    "offer_follow_through": null,
+    "recruiter_interest": 0.5507
+   },
+   "log": {
+    "location": 0.75,
+    "notice": 0.4246,
+    "work_mode": 1.0
+   },
+   "exp": {
+    "band": 1.0,
+    "relevant": 1.0,
+    "seniority": 0.95
+   },
+   "requirements": {
+    "information_retrieval": {
+     "skill": 0.0,
+     "text": 0.2465,
+     "signal": 0.0,
+     "coverage": 0.2465
+    },
+    "python": {
+     "skill": 0.4945,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.4945
+    },
+    "ranking_recsys": {
+     "skill": 0.0,
+     "text": 0.3038,
+     "signal": 0.0,
+     "coverage": 0.3038
+    },
+    "vector_search_infra": {
+     "skill": 0.0,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.0
+    },
+    "learning_to_rank_models": {
+     "skill": 0.0,
+     "text": 0.0,
+     "signal": 0.0,
+     "coverage": 0.0
+    },
+    "ranking_evaluation": {
+     "skill": 0.0,
+     "text": 0.0969,
+     "signal": 0.0,
+     "coverage": 0.0969
+    }
+   },
+   "summary": "Weak match: Senior Software Engineer at MarketHub (7.0 yrs) meets 0 of 4 must-haves. Concerns: notice period 90 days (JD prefers <= 30).",
+   "concerns": [
+    "notice period 90 days (JD prefers <= 30)"
+   ],
+   "missing": [
+    "No platform assessment for the job's key skills",
+    "No GitHub account linked",
+    "No prior offer history"
+   ],
+   "flags": []
+  }
+ },
+ "skill_strength_examples": {
+  "advanced_48m_assessed_84": 0.7780634164810181,
+  "expert_60m_unassessed": 0.9768118858337402,
+  "expert_0m_unassessed": 0.3499999940395355
+ }
+}

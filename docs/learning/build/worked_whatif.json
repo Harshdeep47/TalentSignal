@@ -1,0 +1,117 @@
+{
+ "default": [
+  {
+   "id": "CAND_9000001",
+   "rank": 1,
+   "overall": 0.9111,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000002",
+   "rank": 2,
+   "overall": 0.4484,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000003",
+   "rank": 3,
+   "overall": 0.3872,
+   "eligible": true,
+   "reason": ""
+  }
+ ],
+ "ranking_hard": [
+  {
+   "id": "CAND_9000001",
+   "rank": 1,
+   "overall": 0.9111,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000002",
+   "rank": 2,
+   "overall": 0.4484,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000003",
+   "rank": 0,
+   "overall": 0.3872,
+   "eligible": false,
+   "reason": "Below minimum evidence for must-have: Ranking / recommendation systems"
+  }
+ ],
+ "role_fit_0.35": [
+  {
+   "id": "CAND_9000001",
+   "rank": 1,
+   "overall": 0.9227,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000002",
+   "rank": 2,
+   "overall": 0.3899,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000003",
+   "rank": 3,
+   "overall": 0.3824,
+   "eligible": true,
+   "reason": ""
+  }
+ ],
+ "no_lexical": [
+  {
+   "id": "CAND_9000001",
+   "rank": 1,
+   "overall": 0.9239,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000002",
+   "rank": 2,
+   "overall": 0.4194,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000003",
+   "rank": 3,
+   "overall": 0.3901,
+   "eligible": true,
+   "reason": ""
+  }
+ ],
+ "no_engagement": [
+  {
+   "id": "CAND_9000001",
+   "rank": 1,
+   "overall": 0.9158,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000002",
+   "rank": 2,
+   "overall": 0.3917,
+   "eligible": true,
+   "reason": ""
+  },
+  {
+   "id": "CAND_9000003",
+   "rank": 3,
+   "overall": 0.3541,
+   "eligible": true,
+   "reason": ""
+  }
+ ]
+}

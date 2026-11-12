@@ -244,6 +244,7 @@ def build_index(source: str | Path, out_dir: str | Path, *, progress: ProgressFn
                           f"Content is identical to {cand_rows[orig_idx]['candidate_id']} apart from id and name.",
                           json.dumps({"duplicate_of": cand_rows[orig_idx]["candidate_id"]})))
     flags_df = pd.DataFrame(flag_rows, columns=["idx", "code", "severity", "title", "detail", "evidence"])
+    flags_df["idx"] = flags_df["idx"].astype("int64")  # keep integer dtype even when there are no flags
     flags_df.to_parquet(out / "integrity.parquet", index=False)
     pd.DataFrame({"text": texts.texts, "kind": texts.kinds}).to_parquet(out / "texts.parquet", index=False)
     np.save(out / "offsets.npy", np.asarray(offsets, dtype=np.int64))

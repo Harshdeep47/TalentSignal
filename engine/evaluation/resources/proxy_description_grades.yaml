@@ -1,0 +1,65 @@
+# PROXY relevance grades for the 44 role-description templates in the
+# reference dataset. THESE ARE NOT GROUND TRUTH.
+#
+# They were assigned by hand (by the TalentSignal developer, reading each
+# template once against the Redrob "Senior AI Engineer" JD) to give the
+# evaluation harness something better than nothing. The hidden competition
+# labels were never available. The scorer never reads this file.
+#
+# Rubric (from the JD's own language):
+#   5  shipped retrieval / ranking / search systems to real users at scale, incl.
+#      the JD's "plain-language Tier 5" profiles that describe that work without
+#      AI keywords
+#   4  substantial production ranking / recommendation / semantic-search work
+#   3  production ML engineering adjacent to retrieval (LLM apps, MLOps,
+#      recommendation-style features), or a ranking lead who may not code
+#   2  applied ML unrelated to retrieval (fraud, churn, NLP classification)
+#   1  ML outside NLP/IR (CV, forecasting) or technical non-ML work
+#   0  non-technical work
+#
+# Keys are description prefixes (first ~40 characters).
+grades:
+  "Built a RAG-based ranking pipeline serving": 5
+  "Led the migration from keyword-based to embedding-based": 5
+  "Owned the end-to-end ranking pipeline at a recommendations": 5
+  "Owned the design and rollout of a large-scale semantic": 5
+  "Built and shipped a production recommendation system": 5
+  "Fine-tuned LLaMA-2-7B and Mistral-7B variants": 5
+  "Built systems that understand what users are looking for": 5
+  "Shipped the personalization infrastructure": 5
+  "Designed the ranking layer for the company's flagship": 5
+  "Owned the search and discovery experience end-to-end": 5
+  "Owned the ranking layer for an e-commerce search": 4
+  "Trained and shipped multiple ranking models": 4
+  "Developed a semantic search feature for an internal": 4
+  "Built a content recommendation system serving 10M+": 4
+  "Led the engineering team building infrastructure to surface": 3
+  "Implemented a RAG-based customer support chatbot": 3
+  "Built and operated production ML pipelines using MLflow": 3
+  "Built recommendation-style features at a mid-stage": 3
+  "Contributed to ML feature engineering and model deployment": 2
+  "Worked on customer-facing predictive modeling": 2
+  "Built NLP pipelines for sentiment analysis": 2
+  "Built computer vision models for our product": 1
+  "Worked on time-series forecasting models": 1
+  "Mixed data science and analytics-engineering role": 1
+  "Implemented streaming data pipelines on Kafka": 1
+  "Built and maintained data pipelines on Apache Airflow": 1
+  "Backend + data hybrid role at a growth-stage": 1
+  "Designed and maintained the analytical data warehouse": 1
+  "Backend development with Python (FastAPI)": 1
+  "Android mobile development using Java": 1
+  "Test automation and QA engineering": 1
+  "Frontend engineering at a media company": 1
+  "Cloud infrastructure and DevOps work": 1
+  "Java backend development at a large enterprise": 1
+  "Full-stack web application development": 1
+  "Customer support team lead at a SaaS": 0
+  "Mechanical engineering design role": 0
+  "Content writing and SEO strategy": 0
+  "Brand design and creative direction": 0
+  "Business analyst at a consulting firm": 0
+  "Operations management role at a logistics": 0
+  "Senior accounting role at a mid-sized": 0
+  "Marketing leadership role at a B2B SaaS": 0
+  "Enterprise sales of cloud software solutions": 0

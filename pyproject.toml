@@ -1,0 +1,11 @@
+[project]
+name = "talentsignal"
+version = "1.0.0"
+description = "Explainable candidate intelligence and ranking platform"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "backend/tests"]
+pythonpath = [".", "backend", "tests"]
+addopts = "-q -p no:cacheprovider"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning"]

@@ -90,7 +90,7 @@ concepts:
   distributed_systems:
     label: Distributed systems / large-scale inference
     category: engineering
-    skills: [Kafka, Spark, Databricks, Apache Beam, Apache Flink, Hadoop, Microservices, Kubernetes]
+    skills: [Kafka, Spark, Databricks, Apache Beam, Apache Flink, Hadoop, Microservices]
     phrases: [distributed system, distributed systems, large-scale inference, inference optimization, sharding, throughput, low latency, p99, horizontally scal]
     semantic: Built distributed, high-throughput systems and optimized large-scale inference.
   production_deployment:

@@ -258,6 +258,7 @@ def explain_candidate(ix: DatasetIndex, pool: ScoredPool, spec: JobSpec, candida
         "overall": round(overall, 4),
         "tone": _tone(rank, overall, eligible),
         "summary": summary,
+        "summary_claims": claims,
         "components": components,
         "constraint_factor": round(float(row["constraint_factor"]), 4),
         "triggered_constraints": triggered,

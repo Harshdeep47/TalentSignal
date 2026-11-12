@@ -28,6 +28,7 @@ from datetime import date
 
 import numpy as np
 import pandas as pd
+from scipy.stats import rankdata
 
 from engine.features import calibration as cal
 from engine.features import constraints as cons
@@ -91,11 +92,16 @@ def _months_ago(dates: pd.Series, as_of: date) -> np.ndarray:
 
 
 def _percentile_positive(x: np.ndarray) -> np.ndarray:
+    """Percentile of each positive score among positive scores; 0 for no match.
+
+    Ties receive the same (highest) percentile, so identical documents always
+    get identical lexical scores regardless of their position in the file.
+    """
     out = np.zeros(len(x), dtype=np.float32)
     pos = x > 0
     if pos.any():
-        order = x[pos].argsort().argsort()
-        out[pos] = (order + 1) / pos.sum()
+        vals = np.round(x[pos].astype(np.float64), 6)
+        out[pos] = rankdata(vals, method="max") / pos.sum()
     return out
 
 
@@ -252,7 +258,13 @@ def score_pool(ix: DatasetIndex, spec: JobSpec, options: ScoringOptions | None =
             [cv("ml_foundations"), cv("information_retrieval"), cv("ranking_recsys"), cv("embeddings_retrieval")]),
         "closed_source_only": lambda: (np.isnan(cand["sig_github_activity_score"].to_numpy(dtype=np.float64))
                                        & (cv("open_source") < 0.2)),
-        "work_authorization": lambda: (~cand["country"].isin(spec.location.countries).to_numpy()
+        # Triggers only for candidates outside the hiring countries who have
+        # explicitly said they will NOT relocate. Candidates abroad who are
+        # willing to relocate are not penalised here: whether they need a visa
+        # depends on citizenship, which the platform must not infer.
+        "work_authorization": lambda: ((~cand["country"].isin(spec.location.countries).to_numpy())
+                                       & (cand["sig_willing_to_relocate"].astype("boolean")
+                                          .fillna(True).to_numpy() == False)  # noqa: E712
                                        if spec.location.countries else np.zeros(n, bool)),
     }
     factor = np.ones(n, dtype=np.float64)

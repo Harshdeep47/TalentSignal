@@ -1,0 +1,17 @@
+# Local toolchain and environments (portable Node lives in .tools/)
+.tools/
+.venv/
+node_modules/
+frontend/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Generated state: datasets, indexes, model weights, run results, databases.
+# All of it is reproducible with scripts/ (see README).
+artifacts/
+data/
+!data/README.md
+*.sqlite3
+*.db
+reports/raw/

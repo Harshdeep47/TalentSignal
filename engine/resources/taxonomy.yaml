@@ -1,0 +1,261 @@
+# TalentSignal knowledge base.
+#
+# This file is DATA, not code: it tells the engine which skills, phrases and job
+# titles express the same underlying capability. Entries were written by reading
+# the reference dataset's closed vocabularies (133 skills, 48 titles) and common
+# job-description language. Extend it to support new domains.
+#
+# concepts:        a capability a job can require. A candidate shows evidence of a
+#                  concept through (a) any listed skill, (b) any phrase found in a
+#                  role description / summary, (c) semantic similarity of their
+#                  text to `semantic`, (d) an optional platform `signal`.
+# role_families:   groups of job titles. `title_patterns` are regexes tried in
+#                  order; the first family that matches a title wins.
+# family_affinity: how transferable experience in one family is to another
+#                  (1.0 = same work, 0 = unrelated). Drives title relevance.
+
+concepts:
+  embeddings_retrieval:
+    label: Embeddings-based retrieval
+    category: retrieval
+    skills: [Embeddings, Sentence Transformers, Vector Representations, Text Encoders, Semantic Search, Vector Search]
+    phrases: [embedding, embeddings, sentence-transformers, sentence transformers, bge, e5, dense retrieval, semantic search, vector search, bi-encoder, embedding drift]
+    semantic: Built and operated embedding-based semantic search and dense retrieval systems used by real users.
+  vector_search_infra:
+    label: Vector databases / hybrid search infrastructure
+    category: retrieval
+    skills: [Pinecone, Weaviate, Qdrant, Milvus, FAISS, pgvector, OpenSearch, Elasticsearch, Search Infrastructure, Search Backend, Indexing Algorithms]
+    phrases: [vector database, vector db, faiss, pinecone, weaviate, qdrant, milvus, pgvector, opensearch, elasticsearch, hybrid search, hybrid retrieval, ann index, index refresh, search infrastructure]
+    semantic: Ran vector database and hybrid lexical plus dense search infrastructure in production, including index refresh.
+  information_retrieval:
+    label: Information retrieval / search relevance
+    category: retrieval
+    skills: [Information Retrieval, Information Retrieval Systems, BM25, Search & Discovery]
+    phrases: [bm25, information retrieval, search relevance, query understanding, search engine, retrieval system, search and discovery, search product]
+    semantic: Worked on search relevance and information retrieval, connecting user queries to the most relevant results.
+  ranking_recsys:
+    label: Ranking / recommendation systems
+    category: ranking
+    skills: [Ranking Systems, Learning to Rank, Recommendation Systems, Content Matching]
+    phrases: [ranking, ranker, learning-to-rank, learning to rank, recommendation system, recommender, recommendations, personalization, re-ranking, reranking, matching system, discovery feed]
+    semantic: Designed and shipped ranking, recommendation or personalization systems that decide what users see.
+  ranking_evaluation:
+    label: Ranking evaluation (NDCG / MRR / MAP, A/B tests)
+    category: evaluation
+    skills: []
+    phrases: [ndcg, mrr, mean average precision, offline evaluation, offline metrics, a/b test, a/b testing, online experiment, evaluation framework, offline-to-online, interleaving, offline experiment]
+    semantic: Designed offline ranking evaluation with NDCG or MRR and interpreted online A/B experiments.
+  python:
+    label: Python
+    category: engineering
+    skills: [Python]
+    phrases: [python, pyspark]
+    semantic: Wrote production Python code.
+  llm_finetuning:
+    label: LLM fine-tuning (LoRA / QLoRA / PEFT)
+    category: llm
+    skills: [LoRA, QLoRA, PEFT, Fine-tuning LLMs, Model Adaptation]
+    phrases: [lora, qlora, peft, fine-tuned llama, fine-tuning llms, instruction tuning, fine-tuned mistral]
+    semantic: Fine-tuned large language models with parameter-efficient methods such as LoRA.
+  llm_applications:
+    label: LLM applications / RAG
+    category: llm
+    skills: [LLMs, RAG, Prompt Engineering, LangChain, LlamaIndex, Haystack]
+    phrases: [rag, retrieval-augmented, retrieval augmented, llm, large language model, prompt engineering, langchain, llamaindex, chatbot]
+    semantic: Built LLM-powered applications such as retrieval-augmented generation.
+  learning_to_rank_models:
+    label: Learning-to-rank models (GBDT / neural)
+    category: ranking
+    skills: [Learning to Rank]
+    phrases: [learning-to-rank, learning to rank, lambdamart, xgboost, lightgbm, gradient boosted, pairwise ranking, listwise]
+    semantic: Trained learning-to-rank models with gradient boosted trees or neural rankers.
+  nlp:
+    label: Natural language processing
+    category: ml
+    skills: [NLP, Natural Language Processing, Hugging Face Transformers, Text Encoders, Document Processing]
+    phrases: [nlp, natural language, text classification, language model, transformer model, named entity, document classification, sentiment]
+    semantic: Built natural language processing models for text understanding.
+  ml_foundations:
+    label: Applied machine learning
+    category: ml
+    skills: [Machine Learning, Deep Learning, Data Science, Feature Engineering, Statistical Modeling, PyTorch, TensorFlow, scikit-learn, Reinforcement Learning]
+    phrases: [machine learning, model training, trained models, pytorch, tensorflow, scikit-learn, sklearn, feature engineering, predictive model]
+    semantic: Trained and deployed machine learning models.
+  mlops:
+    label: MLOps / model serving
+    category: engineering
+    skills: [MLOps, MLflow, Kubeflow, Weights & Biases, BentoML]
+    phrases: [mlflow, kubeflow, model serving, feature store, model registry, ml pipeline, inference service, model monitoring]
+    semantic: Operated ML pipelines, model serving and monitoring in production.
+  distributed_systems:
+    label: Distributed systems / large-scale inference
+    category: engineering
+    skills: [Kafka, Spark, Databricks, Apache Beam, Apache Flink, Hadoop, Microservices, Kubernetes]
+    phrases: [distributed system, distributed systems, large-scale inference, inference optimization, sharding, throughput, low latency, p99, horizontally scal]
+    semantic: Built distributed, high-throughput systems and optimized large-scale inference.
+  production_deployment:
+    label: Production deployment to real users
+    category: delivery
+    skills: []
+    phrases: [in production, production system, production traffic, deployed, shipped, real users, serving, rolled out, on-call, live a/b, queries per month, million users, 10m+ users, 50m+, 30m+, 35m+, at scale, latency budget]
+    semantic: Shipped a system to production where it served real users at meaningful scale and was operated over time.
+  open_source:
+    label: Open-source contributions
+    category: delivery
+    skills: [Open-source ML libraries]
+    phrases: [open-source, open source, contributor, maintainer, published a library]
+    signal: github_activity_score
+    semantic: Contributed to open-source software.
+  hr_tech:
+    label: HR-tech / recruiting / marketplace domain
+    category: domain
+    skills: []
+    phrases: [recruit, recruiter, hiring, talent, job matching, marketplace, hr-tech, hr tech]
+    semantic: Worked on recruiting, hiring or marketplace matching products.
+  computer_vision:
+    label: Computer vision
+    category: ml
+    skills: [Computer Vision, Image Classification, Object Detection, OpenCV, YOLO, CNN, GANs, Diffusion Models]
+    phrases: [computer vision, image classification, object detection, image moderation, resnet, yolo, opencv]
+    semantic: Built computer vision models for images or video.
+  speech:
+    label: Speech / audio
+    category: ml
+    skills: [Speech Recognition, ASR, TTS]
+    phrases: [speech recognition, asr, text-to-speech, tts, voice model, audio model]
+    semantic: Built speech recognition or speech synthesis models.
+  forecasting:
+    label: Time-series forecasting
+    category: ml
+    skills: [Time Series, Forecasting]
+    phrases: [forecasting, time-series, time series, demand prediction]
+    semantic: Built time-series forecasting models.
+  data_engineering:
+    label: Data engineering / pipelines
+    category: engineering
+    skills: [ETL, Data Pipelines, Airflow, dbt, Snowflake, BigQuery, SQL, PostgreSQL, Workflow Orchestration]
+    phrases: [data pipeline, etl, airflow, dbt, warehouse, batch processing, streaming pipeline]
+    semantic: Built and maintained data pipelines and warehouses.
+  backend_engineering:
+    label: Backend engineering / APIs
+    category: engineering
+    skills: [REST APIs, GraphQL, gRPC, FastAPI, Flask, Django, Spring Boot, Node.js, Go, Java, Rust, Redis, MongoDB]
+    phrases: [backend, rest api, microservice, api design, grpc, service architecture]
+    semantic: Built backend services and APIs.
+  frontend_engineering:
+    label: Frontend engineering
+    category: engineering
+    skills: [React, Angular, Vue.js, Next.js, Redux, TypeScript, JavaScript, HTML, CSS, Tailwind, Webpack]
+    phrases: [frontend, front-end, react, user interface, web app]
+    semantic: Built web user interfaces.
+  cloud_devops:
+    label: Cloud / DevOps
+    category: engineering
+    skills: [AWS, GCP, Azure, Terraform, CI/CD, Docker, Kubernetes]
+    phrases: [kubernetes, terraform, ci/cd, cloud infrastructure, devops, docker]
+    semantic: Operated cloud infrastructure and deployment automation.
+  business_functions:
+    label: Business / non-engineering functions
+    category: business
+    skills: [Sales, Marketing, Accounting, Tally, Excel, PowerPoint, SAP, Six Sigma, Salesforce CRM, SEO, Content Writing, Project Management, Agile, Scrum, Figma, Illustrator, Photoshop]
+    phrases: [sales, marketing, accounting, customer support]
+    semantic: Worked in sales, marketing, finance or operations.
+
+# Evaluated in order: the first matching pattern wins. Patterns are regular
+# expressions applied to the lower-cased job title.
+role_families:
+  - id: search_ranking
+    label: Search / ranking / recommendation engineering
+    title_patterns: ['search', 'ranking', 'recommend', 'relevance', 'personaliz']
+  - id: computer_vision
+    label: Computer vision
+    title_patterns: ['computer vision', '\bcv\b', 'vision engineer']
+  - id: speech
+    label: Speech / audio ML
+    title_patterns: ['speech', 'voice ai', 'audio']
+  - id: ai_research
+    label: AI research
+    title_patterns: ['research (engineer|scientist)', 'ai research', 'ml research']
+  - id: ml_engineering
+    label: ML / AI / NLP engineering
+    title_patterns: ['machine learning', '\bml\b', '\bai\b', 'nlp', 'applied scien', 'deep learning', 'mlops', 'llm']
+  - id: data_science
+    label: Data science
+    title_patterns: ['data scien']
+  - id: data_engineering
+    label: Data / analytics engineering
+    title_patterns: ['data engineer', 'analytics engineer', '\betl\b', 'big data']
+  - id: data_analytics
+    label: Data analysis
+    title_patterns: ['data analyst', '\bbi analyst']
+  - id: eng_management
+    label: Engineering management
+    title_patterns: ['engineering manager', 'head of engineering', 'director of engineering', 'vp,? engineering', '\bcto\b', 'chief technology']
+  - id: devops_cloud
+    label: Cloud / DevOps / SRE
+    title_patterns: ['devops', '\bsre\b', 'site reliability', 'cloud', 'platform engineer', 'infrastructure']
+  - id: backend
+    label: Backend engineering
+    title_patterns: ['backend', 'back-end', 'back end', 'api engineer']
+  - id: frontend
+    label: Frontend engineering
+    title_patterns: ['frontend', 'front-end', 'front end', 'ui engineer', 'web developer']
+  - id: mobile
+    label: Mobile engineering
+    title_patterns: ['mobile', 'android', '\bios\b']
+  - id: qa
+    label: QA / test engineering
+    title_patterns: ['\bqa\b', 'quality assurance', 'test engineer', 'sdet']
+  - id: software
+    label: General software engineering
+    title_patterns: ['software', 'developer', 'programmer', 'full stack', 'fullstack', '\.net', '\bjava\b']
+  - id: non_technical
+    label: Non-technical / other disciplines
+    title_patterns: ['.*']
+
+# Symmetric affinities; unspecified pairs are 0 and each family has affinity 1 with itself.
+family_affinity:
+  search_ranking: {ml_engineering: 0.9, data_science: 0.75, ai_research: 0.65, computer_vision: 0.5, speech: 0.5, data_engineering: 0.45, backend: 0.4, software: 0.35, data_analytics: 0.3, devops_cloud: 0.25, eng_management: 0.3, frontend: 0.15, mobile: 0.15, qa: 0.15}
+  ml_engineering: {data_science: 0.8, ai_research: 0.75, computer_vision: 0.65, speech: 0.65, data_engineering: 0.45, backend: 0.35, software: 0.3, data_analytics: 0.35, devops_cloud: 0.25, eng_management: 0.3, frontend: 0.1, mobile: 0.1, qa: 0.15}
+  data_science: {ai_research: 0.6, computer_vision: 0.55, speech: 0.5, data_engineering: 0.5, data_analytics: 0.6, backend: 0.25, software: 0.25, eng_management: 0.2}
+  ai_research: {computer_vision: 0.6, speech: 0.6, software: 0.2}
+  computer_vision: {speech: 0.4, software: 0.25}
+  data_engineering: {backend: 0.6, software: 0.5, data_analytics: 0.55, devops_cloud: 0.45}
+  backend: {software: 0.85, frontend: 0.45, mobile: 0.4, devops_cloud: 0.5, qa: 0.35, eng_management: 0.4}
+  software: {frontend: 0.6, mobile: 0.6, devops_cloud: 0.45, qa: 0.45, eng_management: 0.45}
+  frontend: {mobile: 0.5, qa: 0.3}
+  devops_cloud: {qa: 0.3, eng_management: 0.3}
+
+# Companies widely known as IT-services / consulting firms. Used only when a job
+# description asks to avoid consulting-only careers. Matching is case-insensitive.
+consulting_companies: [tcs, tata consultancy services, infosys, wipro, accenture, cognizant, capgemini, hcl, hcltech, tech mahindra, mindtree, ltimindtree, mphasis, deloitte, ibm consulting]
+consulting_industries: [it services, consulting]
+
+# City aliases so a JD can say "Delhi NCR" or "Bengaluru" and still match a
+# candidate location such as "Noida, Uttar Pradesh".
+location_groups:
+  delhi ncr: [delhi, new delhi, noida, gurgaon, gurugram, ghaziabad, faridabad]
+  ncr: [delhi, new delhi, noida, gurgaon, gurugram, ghaziabad, faridabad]
+  bangalore: [bangalore, bengaluru]
+  bengaluru: [bangalore, bengaluru]
+  mumbai: [mumbai, navi mumbai, thane]
+  pune: [pune]
+  noida: [noida]
+  hyderabad: [hyderabad, secunderabad]
+  chennai: [chennai]
+  kolkata: [kolkata]
+  gurgaon: [gurgaon, gurugram]
+  delhi: [delhi, new delhi]
+
+# Seniority vocabulary (title keyword -> level). Higher = more senior. Titles
+# without a keyword are treated as level 2 (mid-level).
+seniority_levels:
+  intern: 0
+  junior: 1
+  associate: 1
+  senior: 3
+  lead: 4
+  staff: 4
+  principal: 5
+  head: 5
+  director: 5

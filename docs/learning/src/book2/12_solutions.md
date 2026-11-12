@@ -75,7 +75,7 @@ def test_notice_period_matters_only_when_stated(tmp_path, redrob_spec):
 
 (The second assertion holds because `notice_fit` returns NaN when the JD has no ideal notice, and the missing-aware mean drops it.)
 
-**3.3 - Database field.** `CREATE TABLE IF NOT EXISTS` will **not** add a column to an existing table. Add a migration in `Database.__init__`: read `schema_version` from `meta`; if it is 1, run `ALTER TABLE shortlists ADD COLUMN description TEXT NOT NULL DEFAULT ''` and set the version to 2. Also add the column to `SCHEMA` for new databases, accept `description` in `ShortlistCreate`, insert it in `ShortlistService.create`, and display it in `ShortlistDetailPage`.
+**3.3 - Database field.** `CREATE TABLE IF NOT EXISTS` will **not** add a column to an existing table. Add a migration in `Database.__init__`: extend `Database._migrate`: if `schema_version` is 2, run `ALTER TABLE shortlists ADD COLUMN description TEXT NOT NULL DEFAULT ''` and set the version to 3 (bump `SCHEMA_VERSION`). Also add the column to `SCHEMA` for new databases, accept `description` in `ShortlistCreate`, insert it in `ShortlistService.create`, and display it in `ShortlistDetailPage`.
 
 ## Level 4
 

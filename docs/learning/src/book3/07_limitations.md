@@ -22,9 +22,10 @@ Configurable JD parsing with source sentences; bounded evidence scoring with sev
 | SQLite and in-process jobs | Single node; jobs die with the process | PostgreSQL, task queue, workers | More infrastructure |
 | Index build holds rows in memory (`build_index`) | ~2 GB at 100,000; ~20 GB estimated at 1 M | Chunked Arrow writes, multi-process parsing | Code complexity; deterministic merging |
 | Result file and DB row not written atomically (`RunService.create`) | Rare `results_missing` after a crash | Write file to temp name, rename, then commit row | Minor |
-| No migration framework (`db.py`) | Altering tables needs manual code | Versioned migrations (e.g. Alembic or a small runner) | Another dependency |
+| No migration framework (`db.py`; one hand-written v1→v2 migration) | Altering tables needs manual code | Versioned migrations (e.g. Alembic or a small runner) | Another dependency |
 | No demographic fairness audit | Fairness is designed, not measured | Audit selection rates where lawful data exists | Privacy and legal constraints |
-| No PDF job descriptions; no PDF/DOCX résumé ingestion | Real recruiting starts from documents | Document ingestion pipeline with review | Extraction errors; privacy; OCR for scans |
+| No PDF job descriptions | JDs must be pasted or uploaded as DOCX/TXT/MD | Reuse the résumé PDF extractor for JDs | Layout noise in JD text |
+| Résumé ingestion has no OCR and rule-based parsing (`engine/resumes/`) | Scanned PDFs fail; unusual layouts need manual correction; accuracy on real résumés not measured | OCR with its own tests; layout-aware PDF reading; a labelled résumé set | OCR errors; more dependencies; privacy of a labelled set |
 | Frontend tests mock the API | No automated full-browser E2E | Playwright E2E suite | Slower CI; browser downloads |
 
 !!! note "How to talk about this list"

@@ -44,6 +44,9 @@ class Settings:
     job_workers: int = field(default_factory=lambda: int(os.environ.get("TALENTSIGNAL_JOB_WORKERS", "2")))
     frontend_dist: Path = field(default_factory=lambda: PROJECT_ROOT / "frontend" / "dist")
     log_level: str = field(default_factory=lambda: os.environ.get("TALENTSIGNAL_LOG_LEVEL", "INFO"))
+    # Resume ingestion: ZIP archives may be large; individual resumes are
+    # capped separately (engine.resumes.extract.MAX_RESUME_BYTES).
+    max_resume_zip_mb: int = field(default_factory=lambda: int(os.environ.get("TALENTSIGNAL_MAX_RESUME_ZIP_MB", "2048")))
 
     @property
     def db_path(self) -> Path:
@@ -61,6 +64,10 @@ class Settings:
     def runs_dir(self) -> Path:
         return self.artifacts_dir / "runs"
 
+    @property
+    def resumes_dir(self) -> Path:
+        return self.data_dir / "resumes"
+
     def ensure_dirs(self) -> None:
-        for d in (self.data_dir, self.uploads_dir, self.indexes_dir, self.runs_dir):
+        for d in (self.data_dir, self.uploads_dir, self.indexes_dir, self.runs_dir, self.resumes_dir):
             d.mkdir(parents=True, exist_ok=True)

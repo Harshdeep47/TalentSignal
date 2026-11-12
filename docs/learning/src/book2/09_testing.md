@@ -1,6 +1,6 @@
 # Testing and Debugging
 
-TalentSignal has 63 automated tests (34 engine, 21 API, 8 frontend), an evaluation harness, a live smoke test and a screenshot tool. This part explains what each layer catches, how to run it, and how to debug failures.
+TalentSignal has 102 automated tests (59 engine, 32 API, 11 frontend), an evaluation harness, a live smoke test and a screenshot tool. This part explains what each layer catches, how to run it, and how to debug failures.
 
 ## The testing architecture
 
@@ -11,12 +11,15 @@ flowchart TB
         U2["test_jd_parser.py<br/>sections · requirements · extractors · docx"]
         U3["test_scoring.py<br/>formulas · gates · ties · stuffing · missing data"]
         U4["test_explanations_competition_metrics.py<br/>grounding · validator · competition CSV · metrics"]
+        U5["test_resume_ingestion.py<br/>extraction · facts · redaction · ZIP safety · ranking"]
     end
     subgraph API["API tests (pytest + TestClient, backend/tests/)"]
         A1["test_api.py<br/>upload → index → parse → run → query → explain<br/>→ compare → shortlists → exports → competition"]
+        A2["test_resumes_api.py<br/>batch → upload → review → publish → rank · migration"]
     end
     subgraph UI["Frontend tests (Vitest + Testing Library)"]
         F1["workflows.test.tsx<br/>api client · SpecEditor · RunPage · CandidatePage · NewRankingPage"]
+        F2["resumes.test.tsx<br/>batch dashboard · review page"]
     end
     subgraph Live["Against a running server"]
         L1["scripts/smoke_test.py<br/>real 100K dataset, latencies"]

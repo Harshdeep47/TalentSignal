@@ -1,7 +1,8 @@
 // Thin API client. Every request carries the per-browser session id; errors
 // are normalised to ApiError so pages can show the server's message.
 import type {
-  Comparison, Concept, Dashboard, Dataset, Explanation, Facets, JobSpec, Page, ResultRow, Run, Shortlist, Job,
+  CandidateRecord, Comparison, Concept, Dashboard, Dataset, Explanation, Facets, JobSpec, Page, ResultRow, Run, Shortlist,
+  Job, ResumeBatch, ResumeDocRow, ResumeDocStatus, ResumeDocument, ResumeUploadSummary,
 } from "../types/api";
 
 const SESSION_KEY = "talentsignal.session";
@@ -118,7 +119,67 @@ export const api = {
   removeFromShortlist: (id: string, cid: string) =>
     request<Shortlist>("DELETE", `/shortlists/${id}/items/${encodeURIComponent(cid)}`),
   deleteShortlist: (id: string) => request<void>("DELETE", `/shortlists/${id}`),
+
+  resumeBatches: () => request<ResumeBatch[]>("GET", "/resume-batches"),
+  resumeBatch: (id: string) => request<ResumeBatch>("GET", `/resume-batches/${id}`),
+  createResumeBatch: (name: string) => request<ResumeBatch>("POST", "/resume-batches", { name }),
+  deleteResumeBatch: (id: string) => request<void>("DELETE", `/resume-batches/${id}`),
+  processResumes: (id: string, retry_failed = false) =>
+    request<ResumeBatch>("POST", `/resume-batches/${id}/process`, { retry_failed }),
+  resumeDocuments: (id: string, q: { status?: ResumeDocStatus | "processed"; q?: string; limit?: number; offset?: number }) =>
+    request<{ total: number; items: ResumeDocRow[] }>("GET", `/resume-batches/${id}/documents${qs(q)}`),
+  approveCleanResumes: (id: string) => request<{ approved: number }>("POST", `/resume-batches/${id}/approve-clean`),
+  publishResumes: (id: string, name?: string) =>
+    request<{ dataset: Dataset; published: number }>("POST", `/resume-batches/${id}/publish`, { name: name || null }),
+  resumeDocument: (id: string) => request<ResumeDocument>("GET", `/resume-documents/${id}`),
+  updateResumeRecord: (id: string, record: CandidateRecord) =>
+    request<ResumeDocument>("PATCH", `/resume-documents/${id}`, { record }),
+  approveResume: (id: string) => request<ResumeDocument>("POST", `/resume-documents/${id}/approve`),
+  rejectResume: (id: string) => request<ResumeDocument>("POST", `/resume-documents/${id}/reject`),
+  resumeByCandidate: (cid: string) =>
+    request<{ id: string; batch_id: string }>("GET", `/resume-documents/by-candidate/${encodeURIComponent(cid)}`),
 };
+
+/** Upload resumes (PDF, DOCX or ZIP archives) to a batch with upload progress. */
+export function uploadResumes(batchId: string, files: File[], onProgress: (fraction: number) => void):
+  Promise<{ summary: ResumeUploadSummary; batch: ResumeBatch }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `/api/resume-batches/${batchId}/files`);
+    xhr.setRequestHeader("X-Session-Id", sessionId());
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
+    xhr.onload = () => {
+      let data: any = null;
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch {
+        /* ignore */
+      }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      else reject(new ApiError(xhr.status, data?.error?.code ?? "upload_failed", data?.error?.message ?? "Upload failed"));
+    };
+    xhr.onerror = () => reject(new ApiError(0, "network", "Network error during upload"));
+    const fd = new FormData();
+    files.forEach((f) => fd.append("files", f));
+    xhr.send(fd);
+  });
+}
+
+/** Download a stored original resume (GET, so the session header can be sent). */
+export async function downloadOriginal(docId: string, fallbackName = "resume"): Promise<void> {
+  const res = await request<Response>("GET", `/resume-documents/${docId}/original`, undefined, true);
+  const cd = res.headers.get("Content-Disposition") ?? "";
+  const encoded = /filename\*=utf-8''([^;]+)/i.exec(cd)?.[1];
+  const name = encoded ? decodeURIComponent(encoded) : /filename="([^"]+)"/.exec(cd)?.[1] ?? fallbackName;
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
 
 /** Upload a candidate file with real upload progress (fetch cannot report it). */
 export function uploadDataset(file: File, onProgress: (fraction: number) => void): Promise<Dataset> {

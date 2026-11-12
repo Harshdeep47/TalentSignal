@@ -145,6 +145,18 @@ The missing-aware mean used by three components is short enough to read in full:
 
 #@include engine/evaluation/metrics.py::evaluate_ranking
 
+## engine/resumes - résumé extraction and parsing
+
+Three modules turn a PDF or DOCX résumé into a candidate record (overview in Book 1, Part 4; full reference in `docs/RESUME_INGESTION.md`). `extract.py` produces an `ExtractedDocument` - lines with page and line numbers - using pypdf for PDFs and plain XML reading for DOCX, with size caps, redaction of personal-attribute lines, and specific error codes (`no_text_layer` for scanned PDFs, `encrypted`, `corrupted`, …). `zipsafe.py` checks archive members before anything is copied and streams each one with a byte limit that does not trust the archive's declared sizes:
+
+#@include engine/resumes/zipsafe.py::copy_member
+
+`parse.py` splits the lines into sections and returns *facts* (`value`, `status` stated/inferred/missing, `source`, `note`). The last step maps facts onto the existing schema - note what it leaves empty:
+
+#@include engine/resumes/parse.py::to_candidate_record
+
+The output goes through the same `Normalizer` as any dataset row, so a résumé candidate is indistinguishable to the ranking engine from any other record with missing platform signals.
+
 ## Why the engine is structured this way
 
 | Choice | Engineering rationale |

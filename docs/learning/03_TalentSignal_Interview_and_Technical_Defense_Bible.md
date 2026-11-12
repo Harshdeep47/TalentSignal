@@ -82,7 +82,7 @@ Each question below has a model answer written to be spoken, followed by the tec
 
 ## Why separate the ranking engine from the API?
 
-**Answer.** "Three reasons. Testability: 34 engine tests run on synthetic data in seconds without HTTP. Reuse: competition mode must run without a server and with network blocked. Clarity: one place to read the algorithm, `score_pool`."
+**Answer.** "Three reasons. Testability: 59 engine tests run on synthetic data and generated documents without HTTP. Reuse: competition mode must run without a server and with network blocked. Clarity: one place to read the algorithm, `score_pool`."
 
 **Follow-up - "Isn't that over-engineering for a small project?"** "It costs one boundary: the `JobSpec` model in, a `ScoredPool` out. Both already exist for other reasons - the `JobSpec` is what the recruiter edits, and the scored pool feeds explanations."
 
@@ -707,7 +707,7 @@ flowchart TB
 ```
 <p class="caption">Figure 6.1 - Evaluation methodology layers. The dotted layer does not exist yet.</p>
 
-"Three layers. One: unit and API tests for correctness - 63 tests, including formulas, gates, ties and grounding. Two: label-free robustness experiments - adversarial injection, look-alike separation, missing-data neutrality, stability under ±20% weight noise, explanation grounding. Three: proxy-label metrics with the competition's own composite, used only comparatively, plus ablations of every component. With real users I'd add recruiter feedback as implicit labels and an online A/B test on shortlist acceptance."
+"Three layers. One: unit and API tests for correctness - 102 tests, including formulas, gates, ties and grounding. Two: label-free robustness experiments - adversarial injection, look-alike separation, missing-data neutrality, stability under ±20% weight noise, explanation grounding. Three: proxy-label metrics with the competition's own composite, used only comparatively, plus ablations of every component. With real users I'd add recruiter feedback as implicit labels and an online A/B test on shortlist acceptance."
 
 ## How do you prevent a candidate from manipulating the score?
 
@@ -742,6 +742,10 @@ flowchart TB
 5. Whole-word phrase matching misses plurals and word forms.
 6. No authentication; sessions are not security.
 7. Measured at 100,000 candidates only; the index build holds rows in memory (~2 GB).
+
+## How do you stop résumé parsing from inventing qualifications?
+
+"By design and by test. Every extracted value is a fact marked stated, inferred or missing, with the page and line it came from; inferred values carry the rule that produced them. Anything not written - proficiency, skill durations, platform signals - stays empty, and the ranking engine already treats empty as unknown rather than zero. Contact details never enter the candidate record. Then a human reviews every profile before it can be published; bulk approval only takes profiles without warnings. Scanned PDFs fail with `no_text_layer` because there is no OCR - I chose a clear failure over a guess. The tests check statuses, provenance, redaction and that no e-mail or phone reaches an export. What I have not measured is accuracy on real résumés - there was no labelled set - so I say that."
 
 ## What would you improve with another month?
 
@@ -780,9 +784,10 @@ Configurable JD parsing with source sentences; bounded evidence scoring with sev
 | SQLite and in-process jobs | Single node; jobs die with the process | PostgreSQL, task queue, workers | More infrastructure |
 | Index build holds rows in memory (`build_index`) | ~2 GB at 100,000; ~20 GB estimated at 1 M | Chunked Arrow writes, multi-process parsing | Code complexity; deterministic merging |
 | Result file and DB row not written atomically (`RunService.create`) | Rare `results_missing` after a crash | Write file to temp name, rename, then commit row | Minor |
-| No migration framework (`db.py`) | Altering tables needs manual code | Versioned migrations (e.g. Alembic or a small runner) | Another dependency |
+| No migration framework (`db.py`; one hand-written v1→v2 migration) | Altering tables needs manual code | Versioned migrations (e.g. Alembic or a small runner) | Another dependency |
 | No demographic fairness audit | Fairness is designed, not measured | Audit selection rates where lawful data exists | Privacy and legal constraints |
-| No PDF job descriptions; no PDF/DOCX résumé ingestion | Real recruiting starts from documents | Document ingestion pipeline with review | Extraction errors; privacy; OCR for scans |
+| No PDF job descriptions | JDs must be pasted or uploaded as DOCX/TXT/MD | Reuse the résumé PDF extractor for JDs | Layout noise in JD text |
+| Résumé ingestion has no OCR and rule-based parsing (`engine/resumes/`) | Scanned PDFs fail; unusual layouts need manual correction; accuracy on real résumés not measured | OCR with its own tests; layout-aware PDF reading; a labelled résumé set | OCR errors; more dependencies; privacy of a labelled set |
 | Frontend tests mock the API | No automated full-browser E2E | Playwright E2E suite | Slower CI; browser downloads |
 
 !!! note "How to talk about this list"
@@ -865,7 +870,8 @@ Choose three or four; each is backed by a file you can show.
 - Implemented grounded explanations that follow the exact evidence used for scoring and validate every claim against the source record (0 unsupported skill mentions in a 200-explanation audit).
 - Built a FastAPI service with background jobs, SQLite/Parquet persistence, server-side paging over ~100,000-row result tables (150-270 ms per query) and six export formats, with upload limits, path allow-listing and spreadsheet formula-injection protection.
 - Built an evaluation harness (proxy NDCG/MAP, ablations, weight-perturbation stability, adversarial injection) and used it to reject a feature that reduced ranking quality.
-- Wrote 63 automated tests (pytest, FastAPI TestClient, Vitest/Testing Library).
+- Built a résumé ingestion pipeline (PDF/DOCX/ZIP) where every extracted value carries a stated/inferred/missing status and its page and line, with recruiter review before ranking; processed 10,000 synthetic résumés in about 3 minutes at under 1 GB peak memory, with zip-bomb, zip-slip and size protections.
+- Wrote 102 automated tests (pytest, FastAPI TestClient, Vitest/Testing Library).
 
 !!! warning "Bullets to avoid"
     "Improved hiring accuracy by X%" (never measured), "deployed to production / used by recruiters" (not true), "fair AI" (not audited), "scales to millions" (not benchmarked), "outperforms the baseline" (the reference scores higher on the proxies).

@@ -17,7 +17,7 @@ cd frontend && npm install && npm run build && cd ..
 
 On macOS or Linux use `.venv/bin/python`. If Node.js is not installed system-wide, the project's own setup unpacked a portable, checksum-verified Node into `.tools/node` and prefixed commands with `PATH="$(pwd)/.tools/node:$PATH"`.
 
-**Why install torch first:** without the CPU index URL, pip may resolve a CUDA build of several gigabytes. **Verified:** a clean, isolated virtual environment installed this way passed all 55 Python tests.
+**Why install torch first:** without the CPU index URL, pip may resolve a CUDA build of several gigabytes. **Verified:** a clean, isolated virtual environment installed this way passed all 55 Python tests that existed at the time (before résumé ingestion added `pypdf` and 36 tests; those were run in the development environment).
 
 ## Running
 

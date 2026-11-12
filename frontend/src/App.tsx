@@ -10,6 +10,8 @@ import CandidatePage from "./pages/CandidatePage";
 import ComparePage from "./pages/ComparePage";
 import HistoryPage from "./pages/HistoryPage";
 import { ShortlistsPage, ShortlistDetailPage } from "./pages/ShortlistsPage";
+import ResumesPage, { ResumeBatchPage } from "./pages/ResumesPage";
+import ResumeReviewPage from "./pages/ResumeReviewPage";
 import { Empty } from "./components/ui";
 
 export default function App() {
@@ -27,6 +29,9 @@ export default function App() {
           <Route path="history" element={<HistoryPage />} />
           <Route path="shortlists" element={<ShortlistsPage />} />
           <Route path="shortlists/:id" element={<ShortlistDetailPage />} />
+          <Route path="resumes" element={<ResumesPage />} />
+          <Route path="resumes/:id" element={<ResumeBatchPage />} />
+          <Route path="resumes/:bid/documents/:did" element={<ResumeReviewPage />} />
           <Route path="*" element={<Empty title="Page not found">The link may be out of date.</Empty>} />
         </Route>
       </Routes>

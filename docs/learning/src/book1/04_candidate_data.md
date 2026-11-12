@@ -222,3 +222,40 @@ The index builder splits each record into rows of separate tables, because the s
 | Non-tech title with five or more AI skills (4,179) | No flag by itself; skill credibility halves their skill evidence, and a JD-specific "uncorroborated skills" warning appears when 4+ job skills are claimed with no related role |
 
 Part 8 explains the integrity checks and their severities in detail.
+
+## A second way in: résumé ingestion
+
+Everything above assumes candidates arrive as structured records. Recruiters also hold résumés - PDF and Word files. TalentSignal can turn those into candidate records too, but deliberately **not** into a second ranking system: the résumé pipeline ends by writing ordinary records in the schema above, which then go through the same validation, indexing, ranking and explanations. The code is `engine/resumes/` (extraction and parsing) and `backend/app/services/resumes.py` (batches, review, publishing); the full reference is `docs/RESUME_INGESTION.md`.
+
+```mermaid
+flowchart TB
+    U["Upload: PDF, DOCX or ZIP"] --> C{"Checks: type by magic bytes,<br/>size, archive safety, duplicate"}
+    C -->|unusable| F["failed (with a reason)"]
+    C -->|same bytes as before| D["duplicate"]
+    C -->|ok| X["Extract text lines<br/>(page and line numbers kept)"]
+    X -->|scanned / encrypted / broken| F
+    X --> P["Parse into facts:<br/>stated · inferred · missing"]
+    P --> R["Recruiter reviews and corrects"]
+    R -->|approve| PUB["Publish: JSONL dataset"]
+    PUB --> IDX["Existing index → ranking → explanations"]
+```
+<p class="caption">Figure 4.2 - The résumé pipeline. Everything after "Publish" is the unchanged engine described in this book.</p>
+
+**Facts, not guesses.** The parser records every value it extracts as a *fact* with a status and a source:
+
+```json
+{"value": "Asha Verma", "status": "stated",
+ "source": {"page": 1, "line": 1, "text": "Asha Verma"}, "note": null}
+```
+
+| Status | Meaning | Example |
+|---|---|---|
+| stated | the text is in the document | a job title, "PyTorch (Expert)", "7 years of experience" |
+| inferred | derived by a documented rule | a role's duration from its dates; India from "Pune"; total years from merged role dates |
+| missing | not found - left empty | company size, a proficiency the résumé does not state |
+
+The rule that matters most for ranking: **nothing is invented.** Proficiency is filled only when written; skill durations, endorsements, assessments and every platform signal stay empty. Because the engine already treats missing values as unknown (Step 3 above), résumé candidates are neither penalised nor credited for data a résumé cannot contain.
+
+**Where the facts go.** Name, headline, location, roles, education, skills and certifications map onto the matching record fields; the summary, projects and achievements are combined into `profile.summary` so they count as text evidence. Contact details (e-mail, phone, profile links) are shown to the recruiter but are *not* copied into the record, so they never reach an index, a run or an export. Lines stating personal attributes (date of birth, gender, marital status, nationality, religion and similar) are redacted before parsing.
+
+**What it cannot do.** There is no OCR: an image-only (scanned) PDF fails with a clear message instead of being guessed. Parsing is rule-based and tuned on common English layouts, so unusual layouts produce missing facts - which is why every profile is reviewed before it can join a ranking pool, and why the parser's accuracy on real résumés is reported as *not measured* (no labelled set was available). On 10,000 synthetic résumés, processing took 178 s with one worker (152 s on an otherwise idle machine) and the whole process peaked at 834 MB (`docs/reports/resume_ingestion_benchmark.json`).

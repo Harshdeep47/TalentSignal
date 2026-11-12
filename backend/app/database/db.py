@@ -14,7 +14,8 @@ import uuid
 from pathlib import Path
 from typing import Any, Iterable
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+JOB_KINDS = "('index', 'rank', 'resume')"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -40,7 +41,7 @@ CREATE INDEX IF NOT EXISTS ix_datasets_owner ON datasets(owner);
 CREATE TABLE IF NOT EXISTS jobs (
     id           TEXT PRIMARY KEY,
     owner        TEXT,
-    kind         TEXT NOT NULL CHECK (kind IN ('index', 'rank')),
+    kind         TEXT NOT NULL CHECK (kind IN ('index', 'rank', 'resume')),
     target_id    TEXT NOT NULL,
     status       TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),
     progress     REAL NOT NULL DEFAULT 0,
@@ -98,6 +99,72 @@ CREATE TABLE IF NOT EXISTS activity (
     created_at  REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_activity_owner ON activity(owner, created_at);
+
+-- v2: resume ingestion -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS resume_batches (
+    id               TEXT PRIMARY KEY,
+    owner            TEXT NOT NULL,
+    name             TEXT NOT NULL,
+    last_dataset_id  TEXT,                   -- dataset created by the latest publish
+    created_at       REAL NOT NULL,
+    updated_at       REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_resume_batches_owner ON resume_batches(owner, created_at);
+
+CREATE TABLE IF NOT EXISTS resume_documents (
+    id                     TEXT PRIMARY KEY,
+    batch_id               TEXT NOT NULL REFERENCES resume_batches(id) ON DELETE CASCADE,
+    owner                  TEXT NOT NULL,
+    filename               TEXT NOT NULL,    -- display name only (sanitised)
+    kind                   TEXT,             -- pdf | docx | NULL when unrecognised
+    size_bytes             INTEGER NOT NULL,
+    sha256                 TEXT,
+    stored_path            TEXT,             -- original file (server-chosen name); NULL if not kept
+    status                 TEXT NOT NULL CHECK (status IN ('queued', 'processing', 'needs_review', 'approved',
+                                                           'rejected', 'failed', 'duplicate')),
+    error_code             TEXT,
+    error                  TEXT,
+    duplicate_of           TEXT,             -- document id of the identical file
+    possible_duplicate_of  TEXT,             -- document id with the same contact e-mail / phone
+    candidate_id           TEXT,
+    display_name           TEXT,
+    title                  TEXT,
+    n_pages                INTEGER,
+    n_warnings             INTEGER,
+    contact_key            TEXT,             -- SHA-256 of the normalised e-mail or phone (never the raw value)
+    extraction_path        TEXT,
+    record_json            TEXT,             -- current candidate record (parsed or corrected); used by publish
+    edited                 INTEGER NOT NULL DEFAULT 0,
+    created_at             REAL NOT NULL,
+    updated_at             REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_resume_docs_batch ON resume_documents(batch_id, status);
+CREATE INDEX IF NOT EXISTS ix_resume_docs_sha ON resume_documents(owner, sha256);
+CREATE INDEX IF NOT EXISTS ix_resume_docs_contact ON resume_documents(owner, contact_key);
+CREATE INDEX IF NOT EXISTS ix_resume_docs_candidate ON resume_documents(owner, candidate_id);
+"""
+
+# v1 -> v2: SQLite cannot alter a CHECK constraint, so the jobs table is
+# rebuilt with the extra 'resume' kind. Rows are copied unchanged.
+MIGRATE_V1_JOBS = f"""
+CREATE TABLE jobs_v2 (
+    id           TEXT PRIMARY KEY,
+    owner        TEXT,
+    kind         TEXT NOT NULL CHECK (kind IN {JOB_KINDS}),
+    target_id    TEXT NOT NULL,
+    status       TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')),
+    progress     REAL NOT NULL DEFAULT 0,
+    message      TEXT,
+    error        TEXT,
+    created_at   REAL NOT NULL,
+    started_at   REAL,
+    finished_at  REAL
+);
+INSERT INTO jobs_v2 SELECT id, owner, kind, target_id, status, progress, message, error, created_at,
+                           started_at, finished_at FROM jobs;
+DROP TABLE jobs;
+ALTER TABLE jobs_v2 RENAME TO jobs;
+CREATE INDEX IF NOT EXISTS ix_jobs_target ON jobs(target_id);
 """
 
 
@@ -117,9 +184,24 @@ class Database:
         path.parent.mkdir(parents=True, exist_ok=True)
         with self.write_lock:
             c = self.conn
+            fresh = c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meta'").fetchone() is None
             c.executescript(SCHEMA)
-            c.execute("INSERT OR IGNORE INTO meta(key, value) VALUES ('schema_version', ?)", (str(SCHEMA_VERSION),))
+            c.execute("INSERT OR IGNORE INTO meta(key, value) VALUES ('schema_version', ?)",
+                      (str(SCHEMA_VERSION if fresh else 1),))
             c.commit()
+            self._migrate(c)
+
+    def _migrate(self, c: sqlite3.Connection) -> None:
+        version = int(c.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0])
+        if version < 2:
+            jobs_sql = c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='jobs'").fetchone()[0]
+            if "'resume'" not in jobs_sql:
+                c.executescript("BEGIN;" + MIGRATE_V1_JOBS + "COMMIT;")
+            c.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+            c.commit()
+
+    def schema_version(self) -> int:
+        return int(self.one("SELECT value FROM meta WHERE key='schema_version'")["value"])
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -141,14 +223,32 @@ class Database:
 
     def execute(self, sql: str, params: Iterable[Any] = ()) -> int:
         with self.write_lock:
-            cur = self.conn.execute(sql, tuple(params))
-            self.conn.commit()
+            try:
+                cur = self.conn.execute(sql, tuple(params))
+                self.conn.commit()
+            except Exception:
+                self.conn.rollback()  # never leave a failed write's transaction (and its lock) open
+                raise
             return cur.rowcount
 
     def insert(self, table: str, row: dict) -> None:
         cols = ", ".join(row)
         qs = ", ".join("?" for _ in row)
         self.execute(f"INSERT INTO {table} ({cols}) VALUES ({qs})", row.values())
+
+    def insert_many(self, table: str, rows: list[dict]) -> None:
+        """Insert rows that share the same columns in one transaction."""
+        if not rows:
+            return
+        cols = list(rows[0])
+        sql = f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({', '.join('?' for _ in cols)})"
+        with self.write_lock:
+            try:
+                self.conn.executemany(sql, [tuple(r[c] for c in cols) for r in rows])
+                self.conn.commit()
+            except Exception:
+                self.conn.rollback()
+                raise
 
     def update(self, table: str, id_: str, **fields: Any) -> None:
         sets = ", ".join(f"{k} = ?" for k in fields)

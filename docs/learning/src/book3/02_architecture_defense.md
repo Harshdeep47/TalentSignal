@@ -10,7 +10,7 @@ Each question below has a model answer written to be spoken, followed by the tec
 
 ## Why separate the ranking engine from the API?
 
-**Answer.** "Three reasons. Testability: 34 engine tests run on synthetic data in seconds without HTTP. Reuse: competition mode must run without a server and with network blocked. Clarity: one place to read the algorithm, `score_pool`."
+**Answer.** "Three reasons. Testability: 59 engine tests run on synthetic data and generated documents without HTTP. Reuse: competition mode must run without a server and with network blocked. Clarity: one place to read the algorithm, `score_pool`."
 
 **Follow-up - "Isn't that over-engineering for a small project?"** "It costs one boundary: the `JobSpec` model in, a `ScoredPool` out. Both already exist for other reasons - the `JobSpec` is what the recruiter edits, and the scored pool feeds explanations."
 

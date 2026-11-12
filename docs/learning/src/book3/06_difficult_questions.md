@@ -16,7 +16,7 @@ flowchart TB
 ```
 <p class="caption">Figure 6.1 - Evaluation methodology layers. The dotted layer does not exist yet.</p>
 
-"Three layers. One: unit and API tests for correctness - 63 tests, including formulas, gates, ties and grounding. Two: label-free robustness experiments - adversarial injection, look-alike separation, missing-data neutrality, stability under ±20% weight noise, explanation grounding. Three: proxy-label metrics with the competition's own composite, used only comparatively, plus ablations of every component. With real users I'd add recruiter feedback as implicit labels and an online A/B test on shortlist acceptance."
+"Three layers. One: unit and API tests for correctness - 102 tests, including formulas, gates, ties and grounding. Two: label-free robustness experiments - adversarial injection, look-alike separation, missing-data neutrality, stability under ±20% weight noise, explanation grounding. Three: proxy-label metrics with the competition's own composite, used only comparatively, plus ablations of every component. With real users I'd add recruiter feedback as implicit labels and an online A/B test on shortlist acceptance."
 
 ## How do you prevent a candidate from manipulating the score?
 
@@ -51,6 +51,10 @@ flowchart TB
 5. Whole-word phrase matching misses plurals and word forms.
 6. No authentication; sessions are not security.
 7. Measured at 100,000 candidates only; the index build holds rows in memory (~2 GB).
+
+## How do you stop résumé parsing from inventing qualifications?
+
+"By design and by test. Every extracted value is a fact marked stated, inferred or missing, with the page and line it came from; inferred values carry the rule that produced them. Anything not written - proficiency, skill durations, platform signals - stays empty, and the ranking engine already treats empty as unknown rather than zero. Contact details never enter the candidate record. Then a human reviews every profile before it can be published; bulk approval only takes profiles without warnings. Scanned PDFs fail with `no_text_layer` because there is no OCR - I chose a clear failure over a guess. The tests check statuses, provenance, redaction and that no e-mail or phone reaches an export. What I have not measured is accuracy on real résumés - there was no labelled set - so I say that."
 
 ## What would you improve with another month?
 

@@ -15,7 +15,8 @@ Choose three or four; each is backed by a file you can show.
 - Implemented grounded explanations that follow the exact evidence used for scoring and validate every claim against the source record (0 unsupported skill mentions in a 200-explanation audit).
 - Built a FastAPI service with background jobs, SQLite/Parquet persistence, server-side paging over ~100,000-row result tables (150-270 ms per query) and six export formats, with upload limits, path allow-listing and spreadsheet formula-injection protection.
 - Built an evaluation harness (proxy NDCG/MAP, ablations, weight-perturbation stability, adversarial injection) and used it to reject a feature that reduced ranking quality.
-- Wrote 63 automated tests (pytest, FastAPI TestClient, Vitest/Testing Library).
+- Built a résumé ingestion pipeline (PDF/DOCX/ZIP) where every extracted value carries a stated/inferred/missing status and its page and line, with recruiter review before ranking; processed 10,000 synthetic résumés in about 3 minutes at under 1 GB peak memory, with zip-bomb, zip-slip and size protections.
+- Wrote 102 automated tests (pytest, FastAPI TestClient, Vitest/Testing Library).
 
 !!! warning "Bullets to avoid"
     "Improved hiring accuracy by X%" (never measured), "deployed to production / used by recruiters" (not true), "fair AI" (not audited), "scales to millions" (not benchmarked), "outperforms the baseline" (the reference scores higher on the proxies).

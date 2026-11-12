@@ -109,6 +109,15 @@ class DatasetService:
         self.start_index(row, owner)
         return self.get(row["id"], owner)
 
+    def register_file(self, owner: str, name: str, path: Path) -> dict:
+        """Register a server-generated file in ``uploads_dir`` (e.g. published
+        resume candidates) as an uploaded dataset and start indexing it."""
+        if not path.resolve().is_relative_to(self.s.uploads_dir.resolve()):
+            raise AppError(400, "invalid_path", "Generated datasets must live in the uploads directory.")
+        row = self._create(owner, safe_display_name(name), "upload", path)
+        self.start_index(row, owner)
+        return self.get(row["id"], owner)
+
     def import_path(self, owner: str, raw_path: str) -> dict:
         try:
             path = Path(raw_path).expanduser().resolve(strict=True)

@@ -64,7 +64,7 @@ export interface JobSpec {
 
 export interface Job {
   id: string;
-  kind: "index" | "rank";
+  kind: "index" | "rank" | "resume";
   status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
   progress: number;
   message: string | null;
@@ -306,3 +306,76 @@ export interface Dashboard {
   activity: { kind: string; message: string; ref_id: string | null; created_at: number }[];
   totals: { datasets: number; ready_datasets: number; candidates: number; runs: number; shortlists: number };
 }
+
+// ---- resume ingestion ----------------------------------------------------------
+export type FactStatus = "stated" | "inferred" | "missing";
+export interface FactSource { page: number | null; line: number; text: string }
+export interface Fact<T = unknown> { value: T | null; status: FactStatus; source: FactSource | null; note: string | null }
+
+export type ResumeDocStatus = "queued" | "processing" | "needs_review" | "approved" | "rejected" | "failed" | "duplicate";
+
+export interface ResumeCounts {
+  queued: number; processing: number; needs_review: number; approved: number; rejected: number;
+  failed: number; duplicate: number; total: number; processed: number;
+}
+
+export interface ResumeBatch {
+  id: string;
+  name: string;
+  last_dataset_id: string | null;
+  created_at: number;
+  updated_at: number;
+  counts: ResumeCounts;
+  job: Job | null;
+  last_dataset: { id: string; name: string; status: Dataset["status"]; n_candidates: number | null; error: string | null } | null;
+}
+
+export interface ResumeDocRow {
+  id: string; batch_id: string; filename: string; kind: "pdf" | "docx" | null; size_bytes: number;
+  status: ResumeDocStatus; error_code: string | null; error: string | null;
+  duplicate_of: string | null; possible_duplicate_of: string | null;
+  candidate_id: string | null; display_name: string | null; title: string | null;
+  n_pages: number | null; n_warnings: number | null; edited: number; created_at: number; updated_at: number;
+}
+
+export interface ResumeRole {
+  title: Fact<string>; company: Fact<string>; start_date: Fact<string>; end_date: Fact<string>;
+  is_current: Fact<boolean>; duration_months: Fact<number>; description: Fact<string>;
+}
+export interface ResumeEducation {
+  degree: Fact<string>; field_of_study: Fact<string>; institution: Fact<string>;
+  start_year: Fact<number>; end_year: Fact<number>; grade: Fact<string>;
+}
+
+export interface ResumeExtraction {
+  parser_version: number;
+  document: { kind: string; pages: number; redacted_lines: number };
+  identity: { name: Fact<string>; headline: Fact<string>; location: Fact<string>; country: Fact<string> };
+  contact: { emails: Fact<string>[]; phones: Fact<string>[]; links: Fact<string>[] };
+  summary: Fact<string>;
+  years_of_experience: Fact<number>;
+  current_title: Fact<string>;
+  current_company: Fact<string>;
+  experience: ResumeRole[];
+  education: ResumeEducation[];
+  skills: { name: Fact<string>; proficiency: Fact<string> }[];
+  certifications: { name: Fact<string>; issuer: Fact<string>; year: Fact<number> }[];
+  projects: { title: Fact<string>; details: Fact<string>[] }[];
+  achievements: Fact<string>[];
+  sections_found: string[];
+  warnings: string[];
+}
+
+export interface ResumeDocument extends ResumeDocRow {
+  extraction?: ResumeExtraction;
+  parsed_record?: CandidateRecord;
+  record?: CandidateRecord;
+  edited_fields?: string[];
+  issues?: { level: string; field: string; message: string }[];
+  text_pages: string[][];
+  has_original: boolean;
+  duplicate_of_doc?: { id: string; filename: string; batch_id: string } | null;
+  possible_duplicate_of_doc?: { id: string; filename: string; batch_id: string } | null;
+}
+
+export interface ResumeUploadSummary { received: number; queued: number; duplicate: number; failed: number; archives: number }

@@ -28,6 +28,7 @@ from app.core.errors import install_error_handlers  # noqa: E402
 from app.database.db import Database  # noqa: E402
 from app.services.datasets import DatasetService, IndexCache  # noqa: E402
 from app.services.jobs import JobManager  # noqa: E402
+from app.services.resumes import ResumeService  # noqa: E402
 from app.services.runs import RunService  # noqa: E402
 from app.services.shortlists import ShortlistService  # noqa: E402
 
@@ -52,6 +53,7 @@ class Services:
     runs: RunService
     shortlists: ShortlistService
     semantic_model_available: bool
+    resumes: ResumeService
 
 
 def build_services(settings: Settings) -> Services:
@@ -62,7 +64,7 @@ def build_services(settings: Settings) -> Services:
     runs = RunService(settings, db, jobs, datasets)
     from engine.retrieval.embeddings import default_model_dir
     return Services(settings, db, jobs, datasets, runs, ShortlistService(db, runs),
-                    (default_model_dir() / "config.json").exists())
+                    (default_model_dir() / "config.json").exists(), ResumeService(settings, db, jobs, datasets))
 
 
 def create_app(settings: Settings | None = None, register_library: bool = True) -> FastAPI:

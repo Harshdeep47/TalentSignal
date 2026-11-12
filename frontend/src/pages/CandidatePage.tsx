@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, BadgeCheck, CircleDashed, CircleSlash, ShieldAlert, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, BadgeCheck, CircleDashed, CircleSlash, FileText, ShieldAlert, TrendingDown, TrendingUp } from "lucide-react";
 import { api } from "../services/api";
 import { useAsync } from "../hooks/useAsync";
 import { ErrorBox, num, pct, ScoreBar, score100, Spinner } from "../components/ui";
@@ -15,6 +16,17 @@ const SIGNAL_LABELS: Record<string, string> = {
   recruiter_interest: "Saved by recruiters", location: "Location fit", notice: "Notice period fit", work_mode: "Work-mode fit",
   band: "Years vs band", relevant: "Relevant years", seniority: "Seniority alignment",
 };
+
+/** Link from a candidate created by resume ingestion back to its source document. */
+function SourceResume({ cid }: { cid: string }) {
+  const [link, setLink] = useState<{ id: string; batch_id: string } | null>(null);
+  useEffect(() => {
+    api.resumeByCandidate(cid).then(setLink).catch(() => setLink(null));
+  }, [cid]);
+  if (!link) return null;
+  return <div className="cell-sub" style={{ marginTop: 4 }}>
+    <Link to={`/resumes/${link.batch_id}/documents/${link.id}`}><FileText size={12} /> Source résumé and extraction provenance</Link></div>;
+}
 
 function Evidence({ e }: { e: EvidenceItem }) {
   if (e.kind === "skill") return (
@@ -97,6 +109,7 @@ export default function CandidatePage() {
             <div className="eyebrow">{e.rank ? `Rank ${e.rank}` : "Held for review"} · <span className="mono">{e.candidate_id}</span></div>
             <h1 style={{ margin: "4px 0 2px", fontSize: 24 }}>{p.anonymized_name}</h1>
             <div className="muted">{p.current_title} at {p.current_company} · {num(p.years_of_experience)} years · {p.location}, {p.country}</div>
+            {e.candidate_id.startsWith("RES_") && <SourceResume cid={e.candidate_id} />}
             <p style={{ margin: "10px 0 0", maxWidth: 820 }}><span className={`tone ${toneClass}`}>{e.tone}.</span> {e.summary.replace(`${e.tone}: `, "")}</p>
           </div>
           <div className="big-score"><div className="v">{score100(e.overall)}</div><div className="cell-sub">overall · {e.mandatory_met}/{e.mandatory_total} must-haves</div>

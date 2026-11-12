@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { Database, History, LayoutDashboard, ListChecks, Sparkles } from "lucide-react";
+import { Database, FileText, History, LayoutDashboard, ListChecks, Sparkles } from "lucide-react";
 import { api } from "../services/api";
 import type { Run, Shortlist } from "../types/api";
 import { bus, Logo } from "../components/ui";
@@ -35,6 +35,7 @@ export default function Shell() {
           <NavLink to="/" end><LayoutDashboard size={17} /> Dashboard</NavLink>
           <NavLink to="/rank/new"><Sparkles size={17} /> New ranking</NavLink>
           <NavLink to="/datasets"><Database size={17} /> Datasets</NavLink>
+          <NavLink to="/resumes"><FileText size={17} /> Resume intake</NavLink>
           <NavLink to="/history"><History size={17} /> Ranking history</NavLink>
           <NavLink to="/shortlists"><ListChecks size={17} /> Shortlists</NavLink>
         </nav>

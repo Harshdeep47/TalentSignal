@@ -30,6 +30,7 @@ Hiring software affects people's livelihoods and handles personal data. This par
 | Record validation | `Normalizer` | types coerced, ranges clipped, control characters stripped, text length capped |
 | Request validation | FastAPI + Pydantic | e.g. `page_size` 1-200, `order` must be asc/desc, `flags` from a fixed set, JD text 20-60,000 characters |
 | Sort-column allow-list | `RunService.query` | sorting by an unknown column → 422 |
+| Résumé uploads | `ResumeService.add_files`, `engine/resumes/` | type by magic bytes; 10 MB per résumé enforced while copying; ZIP members checked for count, total size, compression ratio, encryption and nesting; archive paths never become file paths; PDFs read as text only and DOCX as XML text - embedded scripts and macros are never executed |
 
 ### Output safety
 
@@ -69,6 +70,7 @@ This separates history between people using different browsers, which is useful 
 | Datasets uploaded by a session are visible only to that session | **Exists** |
 | Deleting a dataset deletes its uploaded file, its runs and (if unused) its index | **Exists** (`DatasetService.delete`) |
 | Logs do not contain candidate text | **Exists by convention** - errors log types and messages, not records |
+| Résumé contact details kept out of candidate records, indexes and exports; personal-attribute lines redacted before parsing | **Exists** (`engine/resumes/parse.py`, `extract.py`; tested) |
 | Encryption at rest, retention policies, right-to-erasure workflow, consent tracking | **Not implemented** - recommended for production |
 
 ## Bias and fairness in candidate ranking

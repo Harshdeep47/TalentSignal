@@ -9,7 +9,7 @@ The frontend (`frontend/src/`) is a single-page application written in React 18 
 | `main.tsx` | Entry point: loads fonts and CSS, mounts `<App/>` inside a `BrowserRouter` |
 | `App.tsx` | Route table |
 | `layouts/Shell.tsx` | The navigation rail and page frame |
-| `pages/` | One component per screen (9 files) |
+| `pages/` | One component per screen (11 files) |
 | `components/` | `ui.tsx` (primitives), `SpecEditor.tsx` (JD review), `Results.tsx` (table, cards, filters) |
 | `services/api.ts` | The API client |
 | `hooks/useAsync.ts` | `useAsync`, `usePoll`, `useDebounced` |
@@ -30,6 +30,8 @@ flowchart LR
     SHELL --> CMP["ComparePage"]
     SHELL --> HIST["HistoryPage"]
     SHELL --> SLS["ShortlistsPage / ShortlistDetailPage"]
+    SHELL --> RES["ResumesPage / ResumeBatchPage"]
+    SHELL --> REV["ResumeReviewPage"]
     DASH --> DH["DatasetHealth"]
     DSETS --> DH
     NEW --> SPEC["SpecEditor"]
@@ -58,6 +60,8 @@ flowchart LR
 | `/runs/:id/compare?ids=a,b,c` | ComparePage |
 | `/history` | HistoryPage |
 | `/shortlists`, `/shortlists/:id` | ShortlistsPage, ShortlistDetailPage |
+| `/resumes`, `/resumes/:id` | ResumesPage (batches), ResumeBatchPage (processing dashboard, upload, documents, publish) |
+| `/resumes/:bid/documents/:did` | ResumeReviewPage (fact badges, source lines, corrections, approve/reject) |
 | `*` | "Page not found" |
 
 When the app is served by the backend, unknown paths return `index.html` (Part 2), so a page refresh on `/runs/abc` works.

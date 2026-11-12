@@ -6,7 +6,7 @@
                  └──────────────┬─────────────────────────────────────────────────────────────────────────────┘
                                 │ JSON over /api  (X-Session-Id header)
                  ┌──────────────▼──────────── backend/app (FastAPI) ───────────────────────────────────────────┐
-                 │ api/routes.py  →  services/ datasets · runs · shortlists · exports · jobs                   │
+                 │ api/routes.py  →  services/ datasets · runs · shortlists · exports · jobs · resumes         │
                  │ database/db.py (SQLite, WAL)       core/ config · security · errors                         │
                  │ JobManager (thread pool, progress, cancel)      IndexCache / pool LRU (in memory)            │
                  └──────────────┬─────────────────────────────────────────────────────────────────────────────┘
@@ -15,6 +15,7 @@
                  │ ingestion  readers (streaming) · validation (normalise, repair, report) · fingerprint     │
                  │ preprocessing  index.build_index → artifacts/indexes/<fingerprint>/ · store.DatasetIndex   │
                  │ jd  parser (rules) → JobSpec (pydantic, editable) · documents (.docx/.txt/.md)             │
+                 │ resumes  extract (PDF/DOCX) · zipsafe · parse → facts + provenance → candidate record     │
                  │ retrieval  bm25 (sparse) · embeddings (bge-small, offline)                                │
                  │ features  evidence · titles · signals · constraints · calibration                         │
                  │ ranking  scorer.score_pool → ScoredPool · competition (100-row CSV)                       │
@@ -38,6 +39,13 @@
    columns) in `artifacts/runs/<run_id>.parquet`.
 6. **Serve**: paging/filter/sort/facets from the result table; candidate detail and compare from the scored
    pool (LRU; recomputed deterministically from the stored spec after a restart).
+
+7. **Resume intake** (optional front door): PDF/DOCX/ZIP → `ResumeService` stores originals, a background
+   job (`kind='resume'`) extracts and parses one document at a time into facts (stated / inferred /
+   missing, with page and line) and a candidate record validated by the same `Normalizer`; the recruiter
+   reviews and approves; publishing writes approved records to JSONL and registers it as a normal dataset,
+   which then follows steps 1-6 unchanged. Tables `resume_batches`, `resume_documents` (schema v2; the v1
+   `jobs` table is rebuilt to allow the new job kind). Details: [RESUME_INGESTION.md](RESUME_INGESTION.md).
 
 ## Key design decisions
 

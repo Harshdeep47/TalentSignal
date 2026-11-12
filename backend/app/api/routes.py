@@ -8,11 +8,12 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Query, Request, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 
 from app.core.errors import AppError
 from app.core.security import session_owner
 from app.schemas.api import (CompareRequest, CreateRunRequest, ExportRequest, ImportPathRequest, ParseJDRequest,
+                             ResumeBatchCreate, ResumeProcessRequest, ResumePublishRequest, ResumeRecordUpdate,
                              ShortlistCreate, ShortlistItem)
 from app.services import exports
 from engine import __version__
@@ -298,3 +299,93 @@ def remove_item(request: Request, owner: Owner, sid: str, candidate_id: str):
 def delete_shortlist(request: Request, owner: Owner, sid: str):
     services(request).shortlists.delete(sid, owner)
     return Response(status_code=204)
+
+
+# ---- resume ingestion ---------------------------------------------------------
+@router.get("/resume-batches")
+def list_resume_batches(request: Request, owner: Owner):
+    return services(request).resumes.list_batches(owner)
+
+
+@router.post("/resume-batches", status_code=201)
+def create_resume_batch(request: Request, owner: Owner, body: ResumeBatchCreate):
+    return services(request).resumes.create_batch(owner, body.name)
+
+
+@router.get("/resume-batches/{bid}")
+def get_resume_batch(request: Request, owner: Owner, bid: str):
+    return services(request).resumes.get_batch(bid, owner)
+
+
+@router.delete("/resume-batches/{bid}", status_code=204)
+def delete_resume_batch(request: Request, owner: Owner, bid: str):
+    services(request).resumes.delete_batch(bid, owner)
+    return Response(status_code=204)
+
+
+@router.post("/resume-batches/{bid}/files", status_code=201)
+def upload_resumes(request: Request, owner: Owner, bid: str, files: list[UploadFile] = File(...)):
+    s = services(request)
+    summary = s.resumes.add_files(bid, owner, [(f.filename or "resume", f.file) for f in files])
+    return {"summary": summary, "batch": s.resumes.get_batch(bid, owner)}
+
+
+@router.post("/resume-batches/{bid}/process")
+def process_resumes(request: Request, owner: Owner, bid: str, body: ResumeProcessRequest | None = None):
+    s = services(request)
+    s.resumes.start_processing(bid, owner, retry_failed=bool(body and body.retry_failed))
+    return s.resumes.get_batch(bid, owner)
+
+
+@router.get("/resume-batches/{bid}/documents")
+def list_resume_documents(request: Request, owner: Owner, bid: str,
+                          status: str | None = Query(None, pattern="^(queued|processing|needs_review|approved|"
+                                                                    "rejected|failed|duplicate|processed)$"),
+                          q: str | None = Query(None, max_length=100),
+                          limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0)):
+    return services(request).resumes.list_documents(bid, owner, status, q, limit, offset)
+
+
+@router.post("/resume-batches/{bid}/approve-clean")
+def approve_clean_resumes(request: Request, owner: Owner, bid: str):
+    return services(request).resumes.approve_clean(bid, owner)
+
+
+@router.post("/resume-batches/{bid}/publish", status_code=201)
+def publish_resumes(request: Request, owner: Owner, bid: str, body: ResumePublishRequest | None = None):
+    s = services(request)
+    out = s.resumes.publish(bid, owner, body.name if body else None)
+    out["dataset"] = _dataset_json(s, s.datasets.get(out["dataset"]["id"], owner))
+    return out
+
+
+@router.get("/resume-documents/by-candidate/{candidate_id}")
+def resume_by_candidate(request: Request, owner: Owner, candidate_id: str):
+    return services(request).resumes.by_candidate(candidate_id, owner)
+
+
+@router.get("/resume-documents/{did}")
+def get_resume_document(request: Request, owner: Owner, did: str):
+    return services(request).resumes.get_document(did, owner)
+
+
+@router.patch("/resume-documents/{did}")
+def update_resume_document(request: Request, owner: Owner, did: str, body: ResumeRecordUpdate):
+    return services(request).resumes.update_record(did, owner, body.record)
+
+
+@router.post("/resume-documents/{did}/approve")
+def approve_resume(request: Request, owner: Owner, did: str):
+    return services(request).resumes.set_status(did, owner, "approved")
+
+
+@router.post("/resume-documents/{did}/reject")
+def reject_resume(request: Request, owner: Owner, did: str):
+    return services(request).resumes.set_status(did, owner, "rejected")
+
+
+@router.get("/resume-documents/{did}/original")
+def resume_original(request: Request, owner: Owner, did: str):
+    path, media, name = services(request).resumes.original(did, owner)
+    # Always a download (never rendered inline by the browser).
+    return FileResponse(path, media_type=media, filename=name, content_disposition_type="attachment")

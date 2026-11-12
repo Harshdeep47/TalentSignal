@@ -1,6 +1,6 @@
 # API Reference
 
-Every endpoint below exists in `backend/app/api/routes.py`; there are 32 routes. All paths start with `/api`. All routes except `GET /api/health` require the header `X-Session-Id: <uuid>`; without it they return **400 `invalid_session`**. Every error response has the shape:
+Every endpoint below exists in `backend/app/api/routes.py`; there are 47 routes (32 for datasets, jobs, JDs, runs and shortlists; 15 for résumé ingestion). All paths start with `/api`. All routes except `GET /api/health` require the header `X-Session-Id: <uuid>`; without it they return **400 `invalid_session`**. Every error response has the shape:
 
 ```json
 {"error": {"code": "run_not_found", "message": "Run not found."}}
@@ -130,6 +130,27 @@ curl -s -H "X-Session-Id: $S" \
 | `POST /api/shortlists/{id}/items` | `{"candidate_id", "note"?}` | updated shortlist (adds, or updates the note) | 404, 422 | save modal, note editing |
 | `DELETE /api/shortlists/{id}/items/{cid}` | - | updated shortlist | 404 | `ShortlistDetailPage` |
 | `DELETE /api/shortlists/{id}` | - | **204** | 404 | `ShortlistDetailPage` |
+
+## Résumé ingestion
+
+| Method & path | Request | Success | Errors | Called by |
+|---|---|---|---|---|
+| `GET /api/resume-batches` | - | `[batch]` with `counts` per status, latest `job`, `last_dataset` | - | `ResumesPage` |
+| `POST /api/resume-batches` | `{"name"}` | **201** batch | 422 | `ResumesPage` |
+| `GET /api/resume-batches/{id}` | - | batch | 404 `batch_not_found` | `ResumeBatchPage` (polled while processing) |
+| `DELETE /api/resume-batches/{id}` | - | **204**; files removed, published datasets kept | 404 | `ResumeBatchPage` |
+| `POST /api/resume-batches/{id}/files` | multipart, field `files` (1-500 PDF/DOCX/ZIP) | **201** `{summary: {received, queued, duplicate, failed, archives}, batch}`; processing starts | 400 `no_files`, 413 `too_many_files`, 413 `batch_full` | upload zone |
+| `POST /api/resume-batches/{id}/process` | `{"retry_failed": bool}` | batch | 404 | "Process queue / retry failed" |
+| `GET /api/resume-batches/{id}/documents` | `status`, `q`, `limit` (1-500), `offset` | `{total, items: [document row]}` | 422 | documents table |
+| `POST /api/resume-batches/{id}/approve-clean` | - | `{approved}` (no warnings, no possible duplicate) | 404 | "Approve all without warnings" |
+| `POST /api/resume-batches/{id}/publish` | `{"name"?}` | **201** `{dataset, published}`; indexing starts | 409 `nothing_approved` | publish dialog |
+| `GET /api/resume-documents/{id}` | - | row + `extraction` (facts), `record`, `parsed_record`, `edited_fields`, `text_pages`, duplicate links | 404 `document_not_found` | `ResumeReviewPage` |
+| `PATCH /api/resume-documents/{id}` | `{"record": candidate record}` | document; record re-validated, id fixed | 409 `not_reviewable`, 422 `invalid_record` | "Save corrections" |
+| `POST /api/resume-documents/{id}/approve`, `/reject` | - | document | 409 `not_reviewable` | review page |
+| `GET /api/resume-documents/{id}/original` | - | the original file, always as an attachment | 404 `original_missing` | "Original" button |
+| `GET /api/resume-documents/by-candidate/{cid}` | - | `{id, batch_id}` | 404 | "Source résumé" link on `CandidatePage` |
+
+All résumé routes are owner-scoped like the rest of the API: another session receives 404.
 
 ## Non-API paths
 

@@ -77,7 +77,7 @@ flowchart TB
 
 ## How big is it?
 
-At the commit on the cover the repository contains about 3,700 lines of engine Python, 1,700 lines of backend Python, 2,600 lines of TypeScript/TSX, 300 lines of CSS, 63 automated tests (55 Python, 8 frontend), and seven scripts plus a shared helper (`scripts/_mem.py`). Line counts include comments and docstrings. You can read every important file in a few days; this book tells you in which order.
+At the commit on the cover the repository contains about 4,600 lines of engine Python, 2,400 lines of backend Python, 3,500 lines of TypeScript/TSX (about 380 of them tests), 300 lines of CSS, 102 automated tests (91 Python, 11 frontend), and nine scripts plus a shared helper (`scripts/_mem.py`). Line counts include comments and docstrings. You can read every important file in a few days; this book tells you in which order.
 
 !!! tip "Recommended reading order of the source"
     `engine/jd/spec.py` → `engine/ranking/scorer.py` (top to bottom) → `engine/features/evidence.py` → `engine/preprocessing/index.py` → `backend/app/services/runs.py` → `backend/app/api/routes.py` → `frontend/src/pages/RunPage.tsx`. Each later part of this book follows roughly that order.
@@ -188,7 +188,7 @@ def build_services(settings: Settings) -> Services:
     runs = RunService(settings, db, jobs, datasets)
     from engine.retrieval.embeddings import default_model_dir
     return Services(settings, db, jobs, datasets, runs, ShortlistService(db, runs),
-                    (default_model_dir() / "config.json").exists())
+                    (default_model_dir() / "config.json").exists(), ResumeService(settings, db, jobs, datasets))
 ```
 ## Configuration
 
@@ -973,6 +973,76 @@ def evaluate_ranking(ranked_ids: list[str], labels: dict[str, int]) -> dict[str,
     out["composite"] = 0.50 * out["ndcg@10"] + 0.30 * out["ndcg@50"] + 0.15 * out["map@100"] + 0.05 * out["p@10"]
     return {k: round(v, 4) for k, v in out.items()}
 ```
+## engine/resumes - résumé extraction and parsing
+
+Three modules turn a PDF or DOCX résumé into a candidate record (overview in Book 1, Part 4; full reference in `docs/RESUME_INGESTION.md`). `extract.py` produces an `ExtractedDocument` - lines with page and line numbers - using pypdf for PDFs and plain XML reading for DOCX, with size caps, redaction of personal-attribute lines, and specific error codes (`no_text_layer` for scanned PDFs, `encrypted`, `corrupted`, …). `zipsafe.py` checks archive members before anything is copied and streams each one with a byte limit that does not trust the archive's declared sizes:
+
+<p class="src-caption">Source: <code>engine/resumes/zipsafe.py</code> &middot; <code>copy_member</code> (inserted from the repository at build time)</p>
+
+```python
+def copy_member(zf: zipfile.ZipFile, info: zipfile.ZipInfo, out: BinaryIO, limit: int = MAX_RESUME_BYTES) -> int:
+    """Stream one member into ``out``; raises ZipArchiveError if it exceeds ``limit``."""
+    written = 0
+    with zf.open(info) as src:
+        while chunk := src.read(COPY_CHUNK):
+            written += len(chunk)
+            if written > limit:
+                raise ZipArchiveError("Entry is larger than declared or exceeds the size limit.")
+            out.write(chunk)
+    return written
+```
+`parse.py` splits the lines into sections and returns *facts* (`value`, `status` stated/inferred/missing, `source`, `note`). The last step maps facts onto the existing schema - note what it leaves empty:
+
+<p class="src-caption">Source: <code>engine/resumes/parse.py</code> &middot; <code>to_candidate_record</code> (inserted from the repository at build time)</p>
+
+```python
+def to_candidate_record(ex: dict, candidate_id: str, fallback_name: str) -> dict:
+    """Map an extraction onto the candidate schema (values only; no contact details)."""
+    v = lambda f: f["value"] if f else None  # noqa: E731
+    parts = [v(ex["summary"]) or ""]
+    if ex["projects"]:
+        parts.append("Projects: " + " ".join(
+            v(p["title"]) + (": " + " ".join(v(d) for d in p["details"]) if p["details"] else "") + "."
+            for p in ex["projects"]))
+    if ex["achievements"]:
+        parts.append("Achievements: " + "; ".join(v(a) for a in ex["achievements"]) + ".")
+    roles = [{
+        "company": v(r["company"]) or "", "title": v(r["title"]) or "",
+        "start_date": v(r["start_date"]), "end_date": v(r["end_date"]),
+        "duration_months": v(r["duration_months"]), "is_current": bool(v(r["is_current"])),
+        "industry": "", "company_size": None, "description": v(r["description"]) or "",
+    } for r in ex["experience"]]
+    title = v(ex["current_title"]) or ""
+    return {
+        "candidate_id": candidate_id,
+        "profile": {
+            "anonymized_name": v(ex["identity"]["name"]) or fallback_name,
+            "headline": v(ex["identity"]["headline"]) or title,
+            "summary": " ".join(p for p in parts if p).strip()[:6000],
+            "location": v(ex["identity"]["location"]) or "",
+            "country": v(ex["identity"]["country"]) or "",
+            "years_of_experience": v(ex["years_of_experience"]),
+            "current_title": title,
+            "current_company": v(ex["current_company"]) or "",
+            "current_company_size": None,
+            "current_industry": "",
+        },
+        "career_history": roles,
+        "education": [{
+            "institution": v(e["institution"]) or "", "degree": v(e["degree"]) or "",
+            "field_of_study": v(e["field_of_study"]) or "", "start_year": v(e["start_year"]),
+            "end_year": v(e["end_year"]), "grade": v(e["grade"]), "tier": None,
+        } for e in ex["education"]],
+        "skills": [{"name": v(s["name"]), "proficiency": v(s["proficiency"]), "endorsements": None,
+                    "duration_months": None} for s in ex["skills"]],
+        "certifications": [{"name": v(c["name"]), "issuer": v(c["issuer"]) or "", "year": v(c["year"])}
+                           for c in ex["certifications"]],
+        "languages": [],
+        "redrob_signals": {},
+    }
+```
+The output goes through the same `Normalizer` as any dataset row, so a résumé candidate is indistinguishable to the ranking engine from any other record with missing platform signals.
+
 ## Why the engine is structured this way
 
 | Choice | Engineering rationale |
@@ -998,7 +1068,7 @@ The frontend (`frontend/src/`) is a single-page application written in React 18 
 | `main.tsx` | Entry point: loads fonts and CSS, mounts `<App/>` inside a `BrowserRouter` |
 | `App.tsx` | Route table |
 | `layouts/Shell.tsx` | The navigation rail and page frame |
-| `pages/` | One component per screen (9 files) |
+| `pages/` | One component per screen (11 files) |
 | `components/` | `ui.tsx` (primitives), `SpecEditor.tsx` (JD review), `Results.tsx` (table, cards, filters) |
 | `services/api.ts` | The API client |
 | `hooks/useAsync.ts` | `useAsync`, `usePoll`, `useDebounced` |
@@ -1019,6 +1089,8 @@ flowchart LR
     SHELL --> CMP["ComparePage"]
     SHELL --> HIST["HistoryPage"]
     SHELL --> SLS["ShortlistsPage / ShortlistDetailPage"]
+    SHELL --> RES["ResumesPage / ResumeBatchPage"]
+    SHELL --> REV["ResumeReviewPage"]
     DASH --> DH["DatasetHealth"]
     DSETS --> DH
     NEW --> SPEC["SpecEditor"]
@@ -1047,6 +1119,8 @@ flowchart LR
 | `/runs/:id/compare?ids=a,b,c` | ComparePage |
 | `/history` | HistoryPage |
 | `/shortlists`, `/shortlists/:id` | ShortlistsPage, ShortlistDetailPage |
+| `/resumes`, `/resumes/:id` | ResumesPage (batches), ResumeBatchPage (processing dashboard, upload, documents, publish) |
+| `/resumes/:bid/documents/:did` | ResumeReviewPage (fact badges, source lines, corrections, approve/reject) |
 | `*` | "Page not found" |
 
 When the app is served by the backend, unknown paths return `index.html` (Part 2), so a page refresh on `/runs/abc` works.
@@ -1211,7 +1285,7 @@ TalentSignal persists state in two complementary ways: a **SQLite database** for
 
 ## The SQLite schema
 
-The schema is a single SQL string, `SCHEMA`, executed with `executescript` every time the `Database` object is created. Every statement uses `CREATE TABLE IF NOT EXISTS`, so start-up is idempotent: an existing database is left as it is, a new one is created. The schema version is stored in a `meta` table (`schema_version = 1`).
+The schema is a single SQL string, `SCHEMA`, executed with `executescript` every time the `Database` object is created. Every statement uses `CREATE TABLE IF NOT EXISTS`, so start-up is idempotent: an existing database is left as it is, a new one is created. The schema version is stored in a `meta` table (`schema_version = 2` since résumé ingestion; see Migrations).
 
 ```mermaid
 erDiagram
@@ -1271,22 +1345,26 @@ erDiagram
 | `shortlists` | saved shortlist | belongs to one run |
 | `shortlist_items` | candidate in a shortlist | composite primary key `(shortlist_id, candidate_id)` prevents duplicates; `note` holds recruiter comments |
 | `activity` | event for the dashboard feed | messages capped at 300 characters |
+| `resume_batches` | résumé upload batch | owner-scoped; `last_dataset_id` points to the dataset created by the latest publish |
+| `resume_documents` | uploaded résumé (or rejected archive member) | status, error, duplicate links, candidate id, the current record as JSON (`record`data/resumes/<batch>/<doc>.{pdf,docx,json}`), path of the stored original and of the extraction JSON |
 
 ### Every column
 
 | Table | Columns (allowed values enforced by `CHECK` constraints in brackets) |
 |---|---|
 | `datasets` | `id` PK, `owner` (NULL = library), `name`, `source_kind` [upload, path, library], `source_path`, `size_bytes`, `mtime`, `fingerprint`, `status` [pending, indexing, ready, failed], `n_candidates`, `index_dir`, `error`, `created_at`, `updated_at` |
-| `jobs` | `id` PK, `owner`, `kind` [index, rank], `target_id`, `status` [queued, running, succeeded, failed, cancelled], `progress` (0-1), `message`, `error`, `created_at`, `started_at`, `finished_at` |
-| `runs` | `id` PK, `owner`, `dataset_id` FK → datasets (cascade), `name`, `jd_title`, `spec_json`, `shortlist_size` (NULL = all eligible), `status` [queued, running, ready, failed, cancelled], `job_id`, `n_candidates`, `n_eligible`, `n_results`, `summary_json`, `error`, `created_at`, `finished_at` |
+| `jobs` | `id` PK, `owner`, `kind` [index, rank, resume], `target_id`, `status` [queued, running, succeeded, failed, cancelled], `progress` (0-1), `message`, `error`, `created_at`, `started_at`, `finished_at` |
+| `runs` | `id` PK, `owner`, `dataset_id` FK → datasets (cascade), `name`, `jd_title`, `spec`data/resumes/<batch>/<doc>.{pdf,docx,json}`, `shortlist_size` (NULL = all eligible), `status` [queued, running, ready, failed, cancelled], `job_id`, `n_candidates`, `n_eligible`, `n_results`, `summary_json`, `error`, `created_at`, `finished_at` |
 | `shortlists` | `id` PK, `owner`, `run_id` FK → runs (cascade), `name`, `created_at` |
 | `shortlist_items` | `shortlist_id` FK → shortlists (cascade), `candidate_id`, `note`, `added_at`; PK (`shortlist_id`, `candidate_id`) |
 | `activity` | `id` INTEGER PK AUTOINCREMENT, `owner`, `kind`, `message`, `ref_id`, `created_at` |
+| `resume_batches` | `id` PK, `owner`, `name`, `last_dataset_id`, `created_at`, `updated_at` |
+| `resume_documents` | `id` PK, `batch_id` FK → resume_batches (cascade), `owner`, `filename`, `kind`, `size_bytes`, `sha256`, `stored_path`, `status` [queued, processing, needs_review, approved, rejected, failed, duplicate], `error_code`, `error`, `duplicate_of`, `possible_duplicate_of`, `candidate_id`, `display_name`, `title`, `n_pages`, `n_warnings`, `contact_key` (hash, never the raw e-mail), `extraction_path`, `record`data/resumes/<batch>/<doc>.{pdf,docx,json}`, `edited`, `created_at`, `updated_at` |
 | `meta` | `key` PK, `value` (holds `schema_version`) |
 
 Timestamps are Unix epoch seconds (`REAL`). Identifiers are random UUID4 hex strings (`new_id()`).
 
-Indexes: `ix_datasets_owner`, `ix_jobs_target`, `ix_runs_owner (owner, created_at)`, `ix_shortlists_owner`, `ix_activity_owner (owner, created_at)` - matching the queries the services actually run (lists filtered by owner and ordered by time; latest job per target).
+Indexes: `ix_datasets_owner`, `ix_jobs_target`, `ix_runs_owner (owner, created_at)`, `ix_shortlists_owner`, `ix_activity_owner (owner, created_at)`, and for résumés `(batch_id, status)`, `(owner, sha256)`, `(owner, contact_key)`, `(owner, candidate_id)` - matching the queries the services actually run (lists filtered by owner and ordered by time; latest job per target).
 
 ## The data-access helper
 
@@ -1331,13 +1409,29 @@ Table and column names in `insert` and `update` come from code, never from users
 
 ## Migrations
 
-There is no migration framework. Schema changes so far have been *additive* (`CREATE TABLE IF NOT EXISTS`), which existing databases pick up automatically. A change that alters an existing table (for example adding a column) would need an explicit migration step keyed on `schema_version`; that does not exist yet and is listed as an improvement.
+There is no migration framework, but there is one hand-written migration. New tables are *additive* (`CREATE TABLE IF NOT EXISTS`) and existing databases pick them up automatically. Résumé ingestion also needed a new job kind, and SQLite cannot alter a `CHECK` constraint, so version 1 databases have their `jobs` table rebuilt (create, copy every row, drop, rename) inside one transaction, keyed on `schema_version`:
+
+<p class="src-caption">Source: <code>backend/app/database/db.py</code> &middot; <code>Database._migrate</code> (inserted from the repository at build time)</p>
+
+```python
+def _migrate(self, c: sqlite3.Connection) -> None:
+    version = int(c.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0])
+    if version < 2:
+        jobs_sql = c.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='jobs'").fetchone()[0]
+        if "'resume'" not in jobs_sql:
+            c.executescript("BEGIN;" + MIGRATE_V1_JOBS + "COMMIT;")
+        c.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
+        c.commit()
+```
+A test builds a version-1 database by hand, opens it, and checks that the old job survives, the new kind is accepted, an invalid kind is still rejected and re-opening is idempotent (`test_schema_migration_from_v1`). Writing this test exposed a real bug: a failed write left SQLite's implicit transaction - and its lock - open; `Database.execute` now rolls back on error.
 
 ## Persistence in files
 
 | Data | Location | Format | Written by | Read by |
 |---|---|---|---|---|
 | Uploaded candidate files | `data/uploads/<uuid>.<ext>` | as uploaded | `DatasetService.save_upload` | `build_index` |
+| Résumé originals and extractions | `data/resumes/<batch>/<doc>.{pdf,docx,json}`\|.docx\|.json` | original bytes; JSON facts + text | `ResumeService` | review page, original download |
+| Published résumé datasets | `data/uploads/<uuid>.jsonl` | JSONL records | `ResumeService.publish` | `build_index` |
 | Dataset index | `artifacts/indexes/<fingerprint>/` | Parquet, JSONL, NumPy, sparse NPZ, JSON | `build_index` | `DatasetIndex` |
 | Run results | `artifacts/runs/<run_id>.parquet` | Parquet | `RunService` rank job | `RunService.table`, exports |
 | Embedding model | `artifacts/models/bge-small-en-v1.5/` | safetensors + JSON | `scripts/download_model.py` | `Embedder` |
@@ -1360,12 +1454,12 @@ There is no migration framework. Schema changes so far have been *additive* (`CR
 | No stale index for a changed file | directory named by full-file fingerprint |
 | Jobs never stuck "running" after a crash | marked failed at start-up |
 | **Gap:** a run's Parquet file and its database row are not written in one transaction | if the process dies between the two, the API reports `results_missing` (410) for that run |
-| **Gap:** no backups or migrations | single-file SQLite; copy `data/` and `artifacts/` to back up |
+| **Gap:** no backups; one hand-written migration, no framework | single-file SQLite; copy `data/` and `artifacts/` to back up |
 
 
 # API Reference
 
-Every endpoint below exists in `backend/app/api/routes.py`; there are 32 routes. All paths start with `/api`. All routes except `GET /api/health` require the header `X-Session-Id: <uuid>`; without it they return **400 `invalid_session`**. Every error response has the shape:
+Every endpoint below exists in `backend/app/api/routes.py`; there are 47 routes (32 for datasets, jobs, JDs, runs and shortlists; 15 for résumé ingestion). All paths start with `/api`. All routes except `GET /api/health` require the header `X-Session-Id: <uuid>`; without it they return **400 `invalid_session`**. Every error response has the shape:
 
 ```json
 {"error": {"code": "run_not_found", "message": "Run not found."}}
@@ -1495,6 +1589,27 @@ curl -s -H "X-Session-Id: $S" \
 | `POST /api/shortlists/{id}/items` | `{"candidate_id", "note"?}` | updated shortlist (adds, or updates the note) | 404, 422 | save modal, note editing |
 | `DELETE /api/shortlists/{id}/items/{cid}` | - | updated shortlist | 404 | `ShortlistDetailPage` |
 | `DELETE /api/shortlists/{id}` | - | **204** | 404 | `ShortlistDetailPage` |
+
+## Résumé ingestion
+
+| Method & path | Request | Success | Errors | Called by |
+|---|---|---|---|---|
+| `GET /api/resume-batches` | - | `[batch]` with `counts` per status, latest `job`, `last_dataset` | - | `ResumesPage` |
+| `POST /api/resume-batches` | `{"name"}` | **201** batch | 422 | `ResumesPage` |
+| `GET /api/resume-batches/{id}` | - | batch | 404 `batch_not_found` | `ResumeBatchPage` (polled while processing) |
+| `DELETE /api/resume-batches/{id}` | - | **204**; files removed, published datasets kept | 404 | `ResumeBatchPage` |
+| `POST /api/resume-batches/{id}/files` | multipart, field `files` (1-500 PDF/DOCX/ZIP) | **201** `{summary: {received, queued, duplicate, failed, archives}, batch}`; processing starts | 400 `no_files`, 413 `too_many_files`, 413 `batch_full` | upload zone |
+| `POST /api/resume-batches/{id}/process` | `{"retry_failed": bool}` | batch | 404 | "Process queue / retry failed" |
+| `GET /api/resume-batches/{id}/documents` | `status`, `q`, `limit` (1-500), `offset` | `{total, items: [document row]}` | 422 | documents table |
+| `POST /api/resume-batches/{id}/approve-clean` | - | `{approved}` (no warnings, no possible duplicate) | 404 | "Approve all without warnings" |
+| `POST /api/resume-batches/{id}/publish` | `{"name"?}` | **201** `{dataset, published}`; indexing starts | 409 `nothing_approved` | publish dialog |
+| `GET /api/resume-documents/{id}` | - | row + `extraction` (facts), `record`, `parsed_record`, `edited_fields`, `text_pages`, duplicate links | 404 `document_not_found` | `ResumeReviewPage` |
+| `PATCH /api/resume-documents/{id}` | `{"record": candidate record}` | document; record re-validated, id fixed | 409 `not_reviewable`, 422 `invalid_record` | "Save corrections" |
+| `POST /api/resume-documents/{id}/approve`, `/reject` | - | document | 409 `not_reviewable` | review page |
+| `GET /api/resume-documents/{id}/original` | - | the original file, always as an attachment | 404 `original_missing` | "Original" button |
+| `GET /api/resume-documents/by-candidate/{cid}` | - | `{id, batch_id}` | 404 | "Source résumé" link on `CandidatePage` |
+
+All résumé routes are owner-scoped like the rest of the API: another session receives 404.
 
 ## Non-API paths
 
@@ -1953,7 +2068,7 @@ These are fairness and accountability decisions (Book 1, Part 10). Their costs: 
 
 # Testing and Debugging
 
-TalentSignal has 63 automated tests (34 engine, 21 API, 8 frontend), an evaluation harness, a live smoke test and a screenshot tool. This part explains what each layer catches, how to run it, and how to debug failures.
+TalentSignal has 102 automated tests (59 engine, 32 API, 11 frontend), an evaluation harness, a live smoke test and a screenshot tool. This part explains what each layer catches, how to run it, and how to debug failures.
 
 ## The testing architecture
 
@@ -1964,12 +2079,15 @@ flowchart TB
         U2["test_jd_parser.py<br/>sections · requirements · extractors · docx"]
         U3["test_scoring.py<br/>formulas · gates · ties · stuffing · missing data"]
         U4["test_explanations_competition_metrics.py<br/>grounding · validator · competition CSV · metrics"]
+        U5["test_resume_ingestion.py<br/>extraction · facts · redaction · ZIP safety · ranking"]
     end
     subgraph API["API tests (pytest + TestClient, backend/tests/)"]
         A1["test_api.py<br/>upload → index → parse → run → query → explain<br/>→ compare → shortlists → exports → competition"]
+        A2["test_resumes_api.py<br/>batch → upload → review → publish → rank · migration"]
     end
     subgraph UI["Frontend tests (Vitest + Testing Library)"]
         F1["workflows.test.tsx<br/>api client · SpecEditor · RunPage · CandidatePage · NewRankingPage"]
+        F2["resumes.test.tsx<br/>batch dashboard · review page"]
     end
     subgraph Live["Against a running server"]
         L1["scripts/smoke_test.py<br/>real 100K dataset, latencies"]
@@ -2088,7 +2206,7 @@ cd frontend && npm install && npm run build && cd ..
 
 On macOS or Linux use `.venv/bin/python`. If Node.js is not installed system-wide, the project's own setup unpacked a portable, checksum-verified Node into `.tools/node` and prefixed commands with `PATH="$(pwd)/.tools/node:$PATH"`.
 
-**Why install torch first:** without the CPU index URL, pip may resolve a CUDA build of several gigabytes. **Verified:** a clean, isolated virtual environment installed this way passed all 55 Python tests.
+**Why install torch first:** without the CPU index URL, pip may resolve a CUDA build of several gigabytes. **Verified:** a clean, isolated virtual environment installed this way passed all 55 Python tests that existed at the time (before résumé ingestion added `pypdf` and 36 tests; those were run in the development environment).
 
 ## Running
 
@@ -2284,7 +2402,7 @@ def test_notice_period_matters_only_when_stated(tmp_path, redrob_spec):
 
 (The second assertion holds because `notice_fit` returns NaN when the JD has no ideal notice, and the missing-aware mean drops it.)
 
-**3.3 - Database field.** `CREATE TABLE IF NOT EXISTS` will **not** add a column to an existing table. Add a migration in `Database.__init__`: read `schema_version` from `meta`; if it is 1, run `ALTER TABLE shortlists ADD COLUMN description TEXT NOT NULL DEFAULT ''` and set the version to 2. Also add the column to `SCHEMA` for new databases, accept `description` in `ShortlistCreate`, insert it in `ShortlistService.create`, and display it in `ShortlistDetailPage`.
+**3.3 - Database field.** `CREATE TABLE IF NOT EXISTS` will **not** add a column to an existing table. Add a migration in `Database.__init__`: extend `Database._migrate`: if `schema_version` is 2, run `ALTER TABLE shortlists ADD COLUMN description TEXT NOT NULL DEFAULT ''` and set the version to 3 (bump `SCHEMA_VERSION`). Also add the column to `SCHEMA` for new databases, accept `description` in `ShortlistCreate`, insert it in `ShortlistService.create`, and display it in `ShortlistDetailPage`.
 
 ## Level 4
 

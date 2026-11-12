@@ -43,3 +43,22 @@ class ExportRequest(BaseModel):
     scope: str = "shortlist"
     candidate_ids: list[str] | None = Field(default=None, max_length=100_000)
     include_explanations: bool = False
+
+
+# ---- resume ingestion ---------------------------------------------------------
+class ResumeBatchCreate(BaseModel):
+    name: str = Field(default="Resumes", max_length=120)
+
+
+class ResumeRecordUpdate(BaseModel):
+    """A recruiter-corrected candidate record (same schema as dataset rows).
+    It is validated again by the ingestion Normalizer before it is stored."""
+    record: dict
+
+
+class ResumePublishRequest(BaseModel):
+    name: str | None = Field(default=None, max_length=120)
+
+
+class ResumeProcessRequest(BaseModel):
+    retry_failed: bool = False

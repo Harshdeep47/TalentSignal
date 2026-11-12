@@ -4,7 +4,7 @@ TalentSignal persists state in two complementary ways: a **SQLite database** for
 
 ## The SQLite schema
 
-The schema is a single SQL string, `SCHEMA`, executed with `executescript` every time the `Database` object is created. Every statement uses `CREATE TABLE IF NOT EXISTS`, so start-up is idempotent: an existing database is left as it is, a new one is created. The schema version is stored in a `meta` table (`schema_version = 1`).
+The schema is a single SQL string, `SCHEMA`, executed with `executescript` every time the `Database` object is created. Every statement uses `CREATE TABLE IF NOT EXISTS`, so start-up is idempotent: an existing database is left as it is, a new one is created. The schema version is stored in a `meta` table (`schema_version = 2` since résumé ingestion; see Migrations).
 
 ```mermaid
 erDiagram
@@ -64,22 +64,26 @@ erDiagram
 | `shortlists` | saved shortlist | belongs to one run |
 | `shortlist_items` | candidate in a shortlist | composite primary key `(shortlist_id, candidate_id)` prevents duplicates; `note` holds recruiter comments |
 | `activity` | event for the dashboard feed | messages capped at 300 characters |
+| `resume_batches` | résumé upload batch | owner-scoped; `last_dataset_id` points to the dataset created by the latest publish |
+| `resume_documents` | uploaded résumé (or rejected archive member) | status, error, duplicate links, candidate id, the current record as JSON (`record_json`), path of the stored original and of the extraction JSON |
 
 ### Every column
 
 | Table | Columns (allowed values enforced by `CHECK` constraints in brackets) |
 |---|---|
 | `datasets` | `id` PK, `owner` (NULL = library), `name`, `source_kind` [upload, path, library], `source_path`, `size_bytes`, `mtime`, `fingerprint`, `status` [pending, indexing, ready, failed], `n_candidates`, `index_dir`, `error`, `created_at`, `updated_at` |
-| `jobs` | `id` PK, `owner`, `kind` [index, rank], `target_id`, `status` [queued, running, succeeded, failed, cancelled], `progress` (0-1), `message`, `error`, `created_at`, `started_at`, `finished_at` |
+| `jobs` | `id` PK, `owner`, `kind` [index, rank, resume], `target_id`, `status` [queued, running, succeeded, failed, cancelled], `progress` (0-1), `message`, `error`, `created_at`, `started_at`, `finished_at` |
 | `runs` | `id` PK, `owner`, `dataset_id` FK → datasets (cascade), `name`, `jd_title`, `spec_json`, `shortlist_size` (NULL = all eligible), `status` [queued, running, ready, failed, cancelled], `job_id`, `n_candidates`, `n_eligible`, `n_results`, `summary_json`, `error`, `created_at`, `finished_at` |
 | `shortlists` | `id` PK, `owner`, `run_id` FK → runs (cascade), `name`, `created_at` |
 | `shortlist_items` | `shortlist_id` FK → shortlists (cascade), `candidate_id`, `note`, `added_at`; PK (`shortlist_id`, `candidate_id`) |
 | `activity` | `id` INTEGER PK AUTOINCREMENT, `owner`, `kind`, `message`, `ref_id`, `created_at` |
+| `resume_batches` | `id` PK, `owner`, `name`, `last_dataset_id`, `created_at`, `updated_at` |
+| `resume_documents` | `id` PK, `batch_id` FK → resume_batches (cascade), `owner`, `filename`, `kind`, `size_bytes`, `sha256`, `stored_path`, `status` [queued, processing, needs_review, approved, rejected, failed, duplicate], `error_code`, `error`, `duplicate_of`, `possible_duplicate_of`, `candidate_id`, `display_name`, `title`, `n_pages`, `n_warnings`, `contact_key` (hash, never the raw e-mail), `extraction_path`, `record_json`, `edited`, `created_at`, `updated_at` |
 | `meta` | `key` PK, `value` (holds `schema_version`) |
 
 Timestamps are Unix epoch seconds (`REAL`). Identifiers are random UUID4 hex strings (`new_id()`).
 
-Indexes: `ix_datasets_owner`, `ix_jobs_target`, `ix_runs_owner (owner, created_at)`, `ix_shortlists_owner`, `ix_activity_owner (owner, created_at)` - matching the queries the services actually run (lists filtered by owner and ordered by time; latest job per target).
+Indexes: `ix_datasets_owner`, `ix_jobs_target`, `ix_runs_owner (owner, created_at)`, `ix_shortlists_owner`, `ix_activity_owner (owner, created_at)`, and for résumés `(batch_id, status)`, `(owner, sha256)`, `(owner, contact_key)`, `(owner, candidate_id)` - matching the queries the services actually run (lists filtered by owner and ordered by time; latest job per target).
 
 ## The data-access helper
 
@@ -106,13 +110,19 @@ Table and column names in `insert` and `update` come from code, never from users
 
 ## Migrations
 
-There is no migration framework. Schema changes so far have been *additive* (`CREATE TABLE IF NOT EXISTS`), which existing databases pick up automatically. A change that alters an existing table (for example adding a column) would need an explicit migration step keyed on `schema_version`; that does not exist yet and is listed as an improvement.
+There is no migration framework, but there is one hand-written migration. New tables are *additive* (`CREATE TABLE IF NOT EXISTS`) and existing databases pick them up automatically. Résumé ingestion also needed a new job kind, and SQLite cannot alter a `CHECK` constraint, so version 1 databases have their `jobs` table rebuilt (create, copy every row, drop, rename) inside one transaction, keyed on `schema_version`:
+
+#@include backend/app/database/db.py::Database._migrate
+
+A test builds a version-1 database by hand, opens it, and checks that the old job survives, the new kind is accepted, an invalid kind is still rejected and re-opening is idempotent (`test_schema_migration_from_v1`). Writing this test exposed a real bug: a failed write left SQLite's implicit transaction - and its lock - open; `Database.execute` now rolls back on error.
 
 ## Persistence in files
 
 | Data | Location | Format | Written by | Read by |
 |---|---|---|---|---|
 | Uploaded candidate files | `data/uploads/<uuid>.<ext>` | as uploaded | `DatasetService.save_upload` | `build_index` |
+| Résumé originals and extractions | `data/resumes/<batch>/<doc>.{pdf,docx,json}` | original bytes; JSON facts + text | `ResumeService` | review page, original download |
+| Published résumé datasets | `data/uploads/<uuid>.jsonl` | JSONL records | `ResumeService.publish` | `build_index` |
 | Dataset index | `artifacts/indexes/<fingerprint>/` | Parquet, JSONL, NumPy, sparse NPZ, JSON | `build_index` | `DatasetIndex` |
 | Run results | `artifacts/runs/<run_id>.parquet` | Parquet | `RunService` rank job | `RunService.table`, exports |
 | Embedding model | `artifacts/models/bge-small-en-v1.5/` | safetensors + JSON | `scripts/download_model.py` | `Embedder` |
@@ -135,4 +145,4 @@ There is no migration framework. Schema changes so far have been *additive* (`CR
 | No stale index for a changed file | directory named by full-file fingerprint |
 | Jobs never stuck "running" after a crash | marked failed at start-up |
 | **Gap:** a run's Parquet file and its database row are not written in one transaction | if the process dies between the two, the API reports `results_missing` (410) for that run |
-| **Gap:** no backups or migrations | single-file SQLite; copy `data/` and `artifacts/` to back up |
+| **Gap:** no backups; one hand-written migration, no framework | single-file SQLite; copy `data/` and `artifacts/` to back up |

@@ -72,3 +72,25 @@ Chronological record of decisions, measurements and corrections. Dates are 2026-
   55/55 Python tests passed. Development environment: 55 Python + 8 frontend tests passed.
 - Competition ranking timing: 11.9 s and 12.25 s (peak 1.41 GB) on an idle machine; 89.9 s measured once while
   a torch install and the server were running concurrently (resource contention). All under the 300 s budget.
+
+## Phase 9 - Learning books
+- Three PDF books built from Markdown sources in `docs/learning/` (Mermaid + KaTeX rendered offline, Edge
+  headless printing, code excerpts inserted from the repository at build time). See `docs/learning/README.md`.
+
+## Phase 10 - Resume ingestion
+- Inspected first: candidate schema (`engine/ingestion/validation.py`), dataset registration and indexing
+  (`DatasetService`), jobs. `jobs.kind` had `CHECK (kind IN ('index','rank'))`, so a real schema migration
+  (v1 → v2, table rebuild, rows preserved, tested) was added instead of mislabelling resume jobs.
+- New engine package `engine/resumes/` (extract, zipsafe, parse) and `ResumeService`; resume candidates are
+  published as a normal JSONL dataset, so ranking/explanations/integrity/exports are unchanged.
+- Design rule: every value is stated / inferred / missing with page + line; no qualification is invented
+  (proficiency only when stated; signals empty). Contact details stay out of the candidate record.
+- Pypdf added (`pypdf==5.1.0`). Fixture resumes are generated (fictional people) by
+  `tests/fixtures/resumes/make_fixtures.py`, including scanned, encrypted, corrupted and macro-bearing files.
+- Findings while building: a failed write left SQLite's implicit transaction (and lock) open - `Database.execute`
+  now rolls back on error. Short skill names ("Go") matched ordinary words - matched case-sensitively now.
+  The review page remounted its header when the draft loaded (test caught it) - fixed with a stable tree.
+- Benchmark (10,000 synthetic resumes): first run showed publish taking 228 s because it opened one JSON file
+  per document (~20 ms per fresh file open on this Windows machine); records are now also stored in SQLite and
+  publishing streams from there (396 records: 9.0 s → 0.03 s). Final numbers: `docs/RESUME_INGESTION.md`.
+- No OCR was implemented; scanned PDFs are reported as failed (`no_text_layer`), as documented.

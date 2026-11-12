@@ -30,16 +30,16 @@
  },
  "systems": {
   "TalentSignal (full)": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.922,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9102,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9564,
+   "composite": 0.9511,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.21
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.22
   },
   "Reference implementation (committed top-100)": {
    "ndcg@10": 1.0,
@@ -67,252 +67,252 @@
   },
   "Keyword count (JD skills listed)": {
    "ndcg@10": 0.0,
-   "ndcg@50": 0.0172,
-   "map@100": 0.0004,
+   "ndcg@50": 0.019,
+   "map@100": 0.0006,
    "p@10": 0.0,
    "p@5": 0.0,
-   "composite": 0.0052,
+   "composite": 0.0058,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 98,
    "outside_india_in_top100": 23,
    "mean_proxy_label_top100": 0.1
   }
  },
- "overlap_with_reference_top100": 0.76,
+ "overlap_with_reference_top100": 0.73,
  "plain_language_profiles": {
   "count": 6,
   "ranks": [
    8,
    12,
    22,
-   49,
-   78,
-   93
+   51,
+   81,
+   97
   ]
  },
  "ablations": {
   "full system": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.922,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9102,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9564,
+   "composite": 0.9511,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.21,
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.22,
    "overlap_with_full": 1.0
   },
   "- requirements component": {
    "ndcg@10": 0.9202,
    "ndcg@50": 0.8412,
-   "map@100": 0.8613,
+   "map@100": 0.8633,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.8917,
+   "composite": 0.892,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 3.75,
-   "overlap_with_full": 0.7
+   "outside_india_in_top100": 3,
+   "mean_proxy_label_top100": 3.76,
+   "overlap_with_full": 0.68
   },
   "- role fit component": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.9175,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9058,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.955,
+   "composite": 0.9498,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.2,
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.21,
    "overlap_with_full": 0.96
   },
   "- semantic component": {
    "ndcg@10": 0.8445,
-   "ndcg@50": 0.8771,
+   "ndcg@50": 0.8762,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.8854,
+   "composite": 0.8851,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.18,
-   "overlap_with_full": 0.89
+   "outside_india_in_top100": 2,
+   "mean_proxy_label_top100": 4.19,
+   "overlap_with_full": 0.88
   },
   "- lexical (BM25) component": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.922,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9102,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9564,
+   "composite": 0.9511,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.21,
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.22,
    "overlap_with_full": 1.0
   },
   "- experience component": {
    "ndcg@10": 0.9595,
-   "ndcg@50": 0.904,
+   "ndcg@50": 0.9033,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.951,
+   "composite": 0.9508,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.23,
-   "overlap_with_full": 0.94
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.24,
+   "overlap_with_full": 0.93
   },
   "- engagement (behavioural) component": {
    "ndcg@10": 0.9642,
-   "ndcg@50": 0.9379,
+   "ndcg@50": 0.9487,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9634,
+   "composite": 0.9667,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.22,
-   "overlap_with_full": 0.96
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.23,
+   "overlap_with_full": 0.95
   },
   "- logistics component": {
    "ndcg@10": 0.9313,
-   "ndcg@50": 0.9202,
+   "ndcg@50": 0.9196,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9417,
+   "composite": 0.9416,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
+   "outside_india_in_top100": 6,
    "mean_proxy_label_top100": 4.23,
    "overlap_with_full": 0.95
   },
   "- assessments in skill evidence": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.9166,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9182,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9547,
+   "composite": 0.9535,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
+   "outside_india_in_top100": 4,
    "mean_proxy_label_top100": 4.21,
-   "overlap_with_full": 1.0
+   "overlap_with_full": 0.99
   },
   "- career-text evidence": {
    "ndcg@10": 0.9279,
-   "ndcg@50": 0.9189,
+   "ndcg@50": 0.9186,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
    "composite": 0.9396,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.19,
-   "overlap_with_full": 0.86
+   "outside_india_in_top100": 7,
+   "mean_proxy_label_top100": 4.21,
+   "overlap_with_full": 0.84
   },
   "- skill-list evidence": {
    "ndcg@10": 0.9672,
-   "ndcg@50": 0.8979,
+   "ndcg@50": 0.8988,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.953,
+   "composite": 0.9532,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.16,
-   "overlap_with_full": 0.9
+   "outside_india_in_top100": 5,
+   "mean_proxy_label_top100": 4.17,
+   "overlap_with_full": 0.89
   },
   "- title trust / skill credibility": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.922,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.9102,
    "map@100": 1.0,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9564,
+   "composite": 0.9511,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.21,
-   "overlap_with_full": 0.98
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.23,
+   "overlap_with_full": 0.97
   },
   "- constraint policies": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.8991,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.8955,
    "map@100": 0.9763,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9459,
+   "composite": 0.9431,
    "critical_integrity_in_top100": 0,
    "non_technical_titles_in_top100": 0,
    "outside_india_in_top100": 6,
    "mean_proxy_label_top100": 4.19,
-   "overlap_with_full": 0.94
+   "overlap_with_full": 0.98
   },
   "- integrity gate": {
-   "ndcg@10": 0.9595,
-   "ndcg@50": 0.8888,
-   "map@100": 0.922,
+   "ndcg@10": 0.9561,
+   "ndcg@50": 0.8852,
+   "map@100": 0.9318,
    "p@10": 1.0,
    "p@5": 1.0,
-   "composite": 0.9347,
-   "critical_integrity_in_top100": 4,
+   "composite": 0.9333,
+   "critical_integrity_in_top100": 3,
    "non_technical_titles_in_top100": 0,
-   "outside_india_in_top100": 0,
-   "mean_proxy_label_top100": 4.05,
-   "overlap_with_full": 0.96
+   "outside_india_in_top100": 4,
+   "mean_proxy_label_top100": 4.11,
+   "overlap_with_full": 0.97
   }
  },
  "stability_weight_perturbation_20pct": {
   "trials": 10,
-  "mean_overlap_top100": 0.987,
+  "mean_overlap_top100": 0.989,
   "min_overlap_top100": 0.98,
-  "mean_overlap_top10": 0.91,
-  "mean_kendall_tau_top50": 0.889
+  "mean_overlap_top10": 0.96,
+  "mean_kendall_tau_top50": 0.883
  },
  "lookalikes": {
   "candidates_in_lookalike_groups": 92169,
   "groups": 23900,
-  "groups_with_all_distinct_scores": 0.9936,
-  "top500_candidates_in_lookalike_groups": 40,
-  "mean_within_group_score_std": 0.0545
+  "groups_with_all_distinct_scores": 0.9931,
+  "top500_candidates_in_lookalike_groups": 41,
+  "mean_within_group_score_std": 0.0496
  },
  "explanations": {
   "explained": 200,
-  "unsupported_skill_mentions": 12,
+  "unsupported_skill_mentions": 0,
   "distinct_summaries_top100": 100,
-  "mean_explain_ms": 12.5
+  "mean_explain_ms": 12.7
  },
  "latency": {
   "warm_score_100k_s": [
-   2.8,
-   2.79,
-   2.83
+   2.76,
+   2.88,
+   2.9
   ],
-  "warm_score_mean_s": 2.8,
-  "process_peak_rss_mb": 1936.2
+  "warm_score_mean_s": 2.85,
+  "process_peak_rss_mb": 1937.8
  },
  "adversarial": {
   "pool_size": 560,
   "stuffers": 30,
-  "best_stuffer_rank": 104,
+  "best_stuffer_rank": 107,
   "stuffers_in_top_n_strong": 0,
   "n_strong_real_profiles": 40,
   "impossible_profiles_eligible": 0,
-  "sparse_vs_original_mean_score_delta": -0.007,
-  "sparse_vs_original_max_score_drop": 0.0133,
-  "twin_vs_original_mean_score_delta": -0.0552,
+  "sparse_vs_original_mean_score_delta": -0.0068,
+  "sparse_vs_original_max_score_drop": 0.0136,
+  "twin_vs_original_mean_score_delta": -0.0548,
   "twins_ranked_below_original": 30
  }
 }

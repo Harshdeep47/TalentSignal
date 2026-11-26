@@ -13,12 +13,13 @@ from engine.preprocessing.store import DatasetIndex  # noqa: E402
 from engine.retrieval.embeddings import get_embedder  # noqa: E402
 from factories import standard_pool, write_jsonl  # noqa: E402
 
-REDROB_JD = ROOT / "engine" / "resources" / "jobs" / "redrob_senior_ai_engineer.txt"
+# Original sample JD written for this project (the Redrob hackathon JD is not redistributed).
+SAMPLE_JD = ROOT / "engine" / "resources" / "jobs" / "sample_senior_ai_engineer.txt"
 
 
 @pytest.fixture(scope="session")
-def redrob_spec():
-    return parse_job_description(REDROB_JD.read_text(encoding="utf-8"))
+def sample_spec():
+    return parse_job_description(SAMPLE_JD.read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="session")

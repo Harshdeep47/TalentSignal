@@ -17,43 +17,43 @@ def _row(pool, cid):
     return pool.table.set_index("candidate_id").loc[cid]
 
 
-def test_strong_engineer_beats_keyword_stuffer(pool_index, redrob_spec):
-    pool = score_pool(pool_index, redrob_spec, embedder=None)
+def test_strong_engineer_beats_keyword_stuffer(pool_index, sample_spec):
+    pool = score_pool(pool_index, sample_spec, embedder=None)
     assert _rank(pool, "CAND_0000001") < _rank(pool, "CAND_0000003")
     stuffer = _row(pool, "CAND_0000003")
     assert bool(stuffer["uncorroborated_skills"])
     assert stuffer["overall"] < 0.5
 
 
-def test_scores_bounded_and_deterministic(pool_index, redrob_spec):
-    a = score_pool(pool_index, redrob_spec, embedder=None).table
-    b = score_pool(pool_index, redrob_spec, embedder=None).table
+def test_scores_bounded_and_deterministic(pool_index, sample_spec):
+    a = score_pool(pool_index, sample_spec, embedder=None).table
+    b = score_pool(pool_index, sample_spec, embedder=None).table
     assert a["candidate_id"].tolist() == b["candidate_id"].tolist()
     for col in ("overall", "requirements", "role_fit", "experience", "engagement", "logistics", "lexical"):
         assert a[col].between(0, 1).all(), col
 
 
-def test_critical_integrity_is_held_for_review(pool_index, redrob_spec):
-    pool = score_pool(pool_index, redrob_spec, embedder=None)
+def test_critical_integrity_is_held_for_review(pool_index, sample_spec):
+    pool = score_pool(pool_index, sample_spec, embedder=None)
     r = _row(pool, "CAND_0000005")
     assert not r["eligible"] and "review" in r["ineligible_reason"]
-    pool2 = score_pool(pool_index, redrob_spec.model_copy(update={"integrity_policy": "flag"}), embedder=None)
+    pool2 = score_pool(pool_index, sample_spec.model_copy(update={"integrity_policy": "flag"}), embedder=None)
     assert _row(pool2, "CAND_0000005")["eligible"]
 
 
-def test_constraint_policy_changes_effect(pool_index, redrob_spec):
-    pool = score_pool(pool_index, redrob_spec, embedder=None)
+def test_constraint_policy_changes_effect(pool_index, sample_spec):
+    pool = score_pool(pool_index, sample_spec, embedder=None)
     uk = _row(pool, "CAND_0000006")
     assert bool(uk["c_work_authorization"]) and uk["constraint_factor"] < 1
-    spec2 = redrob_spec.model_copy(deep=True)
+    spec2 = sample_spec.model_copy(deep=True)
     for c in spec2.constraints:
         if c.id == "work_authorization":
             c.policy = "exclude"
     assert not _row(score_pool(pool_index, spec2, embedder=None), "CAND_0000006")["eligible"]
 
 
-def test_hard_requirement_gate(pool_index, redrob_spec):
-    spec = redrob_spec.model_copy(deep=True)
+def test_hard_requirement_gate(pool_index, sample_spec):
+    spec = sample_spec.model_copy(deep=True)
     for r in spec.requirements:
         if r.id == "embeddings_retrieval":
             r.hard = True
@@ -62,28 +62,28 @@ def test_hard_requirement_gate(pool_index, redrob_spec):
     assert _row(pool, "CAND_0000001")["eligible"]
 
 
-def test_tie_break_by_candidate_id(tmp_path, redrob_spec):
+def test_tie_break_by_candidate_id(tmp_path, sample_spec):
     recs = [candidate(f"CAND_{i:07d}") for i in (5, 3, 9, 1)]  # identical content
     src = write_jsonl(recs, tmp_path / "t.jsonl")
     build_index(src, tmp_path / "ix", embed=False)
-    t = score_pool(DatasetIndex(tmp_path / "ix"), redrob_spec, embedder=None).table
+    t = score_pool(DatasetIndex(tmp_path / "ix"), sample_spec, embedder=None).table
     assert t["candidate_id"].tolist() == ["CAND_0000001", "CAND_0000003", "CAND_0000005", "CAND_0000009"]
     assert t["rank"].tolist() == [1, 2, 3, 4]
 
 
-def test_adding_synonym_skills_does_not_inflate(tmp_path, redrob_spec):
+def test_adding_synonym_skills_does_not_inflate(tmp_path, sample_spec):
     base = candidate("CAND_0000001", skills=[("Embeddings", "advanced", 30)])
     stuffed = candidate("CAND_0000002", skills=[(s, "advanced", 30) for s in
                                                 ("Embeddings", "Sentence Transformers", "Vector Search",
                                                  "Semantic Search", "Text Encoders")])
     src = write_jsonl([base, stuffed], tmp_path / "s.jsonl")
     build_index(src, tmp_path / "ix", embed=False)
-    pool = score_pool(DatasetIndex(tmp_path / "ix"), redrob_spec, embedder=None)
+    pool = score_pool(DatasetIndex(tmp_path / "ix"), sample_spec, embedder=None)
     a, b = _row(pool, "CAND_0000001"), _row(pool, "CAND_0000002")
     assert a["req_embeddings_retrieval"] == pytest.approx(b["req_embeddings_retrieval"])
 
 
-def test_missing_optional_data_is_neutral(tmp_path, redrob_spec):
+def test_missing_optional_data_is_neutral(tmp_path, sample_spec):
     full = candidate("CAND_0000001")
     sparse = candidate("CAND_0000002")
     for k in ("github_activity_score", "offer_acceptance_rate", "avg_response_time_hours",
@@ -91,7 +91,7 @@ def test_missing_optional_data_is_neutral(tmp_path, redrob_spec):
         sparse["redrob_signals"][k] = None
     src = write_jsonl([full, sparse], tmp_path / "m.jsonl")
     build_index(src, tmp_path / "ix", embed=False)
-    pool = score_pool(DatasetIndex(tmp_path / "ix"), redrob_spec, embedder=None)
+    pool = score_pool(DatasetIndex(tmp_path / "ix"), sample_spec, embedder=None)
     a, b = _row(pool, "CAND_0000001"), _row(pool, "CAND_0000002")
     # Missing values drop out of the weighted mean instead of counting as 0.
     assert abs(float(a["engagement"]) - float(b["engagement"])) < 0.1
@@ -112,18 +112,18 @@ def test_best_per_group():
     assert arg.tolist() == [1, -1, 3, -1]
 
 
-def test_weights_normalize_and_disable(pool_index, redrob_spec):
+def test_weights_normalize_and_disable(pool_index, sample_spec):
     w = ComponentWeights().normalized()
     assert sum(w.values()) == pytest.approx(1)
-    pool = score_pool(pool_index, redrob_spec, ScoringOptions(disabled_components=frozenset({"engagement"})),
+    pool = score_pool(pool_index, sample_spec, ScoringOptions(disabled_components=frozenset({"engagement"})),
                       embedder=None)
     assert "engagement" not in pool.context["weights_used"]
     assert "semantic" not in pool.context["weights_used"]  # no embeddings in this index
     assert sum(pool.context["weights_used"].values()) == pytest.approx(1)
 
 
-def test_semantic_component_when_model_available(semantic_index, redrob_spec):
-    pool = score_pool(semantic_index, redrob_spec)
+def test_semantic_component_when_model_available(semantic_index, sample_spec):
+    pool = score_pool(semantic_index, sample_spec)
     assert pool.context["semantic_available"]
     t = pool.table.set_index("candidate_id")
     assert t.loc["CAND_0000001", "semantic"] > t.loc["CAND_0000004", "semantic"]

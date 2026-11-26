@@ -233,13 +233,13 @@ def test_record_is_valid_and_contains_no_contact_details(asha):
     assert "Projects:" in p["summary"] and "Achievements:" in p["summary"]
 
 
-def test_resume_candidates_rank_with_the_existing_engine(tmp_path, asha, rohan, redrob_spec):
+def test_resume_candidates_rank_with_the_existing_engine(tmp_path, asha, rohan, sample_spec):
     recs = standard_pool(n_filler=20)
     recs.append(to_candidate_record(asha[1], "RES_aaaaaa_00000001", "a"))
     recs.append(to_candidate_record(rohan[1], "RES_aaaaaa_00000002", "r"))
     src = write_jsonl(recs, tmp_path / "pool.jsonl")
     build_index(src, tmp_path / "ix", embed=False)
-    pool = score_pool(DatasetIndex(tmp_path / "ix"), redrob_spec, embedder=None)
+    pool = score_pool(DatasetIndex(tmp_path / "ix"), sample_spec, embedder=None)
     t = pool.table.set_index("candidate_id")
     assert {"RES_aaaaaa_00000001", "RES_aaaaaa_00000002"} <= set(t.index)
     # The ML engineer resume should outrank the backend developer resume for an ML role.

@@ -16,13 +16,13 @@ REF_VALIDATOR = Path(__file__).resolve().parents[2] / "reference material" / "va
 
 
 @pytest.fixture(scope="module")
-def pool(pool_index, redrob_spec):
-    return score_pool(pool_index, redrob_spec, embedder=None)
+def pool(pool_index, sample_spec):
+    return score_pool(pool_index, sample_spec, embedder=None)
 
 
-def test_explanations_are_grounded(pool_index, pool, redrob_spec):
+def test_explanations_are_grounded(pool_index, pool, sample_spec):
     for cid in pool.table["candidate_id"]:
-        e = explain_candidate(pool_index, pool, redrob_spec, cid)
+        e = explain_candidate(pool_index, pool, sample_spec, cid)
         rec = e["record"]
         claims = e["summary_claims"]
         assert validate_text(claims, rec) == [], (cid, e["summary"])
@@ -31,15 +31,15 @@ def test_explanations_are_grounded(pool_index, pool, redrob_spec):
                 assert validate_evidence(item, rec)
 
 
-def test_explanation_content(pool_index, pool, redrob_spec):
-    e = explain_candidate(pool_index, pool, redrob_spec, "CAND_0000001")
+def test_explanation_content(pool_index, pool, sample_spec):
+    e = explain_candidate(pool_index, pool, sample_spec, "CAND_0000001")
     assert e["rank"] <= 2 and e["tone"] == "Top match"
     assert e["mandatory_met"] >= 3
     assert sum(c["contribution"] for c in e["components"]) == pytest.approx(
         e["overall"] / e["constraint_factor"], abs=1e-3)
-    stuffer = explain_candidate(pool_index, pool, redrob_spec, "CAND_0000003")
+    stuffer = explain_candidate(pool_index, pool, sample_spec, "CAND_0000003")
     assert any(f["code"] == "uncorroborated_skill_claims" for f in stuffer["flags"])
-    held = explain_candidate(pool_index, pool, redrob_spec, "CAND_0000005")
+    held = explain_candidate(pool_index, pool, sample_spec, "CAND_0000005")
     assert held["tone"] == "Held for review"
 
 
@@ -53,8 +53,8 @@ def test_validator_catches_fabrication(pool_index):
                                   "company": "Flipkart", "phrases": ["learning-to-rank"]}, rec)
 
 
-def test_competition_csv_is_valid(tmp_path, pool_index, pool, redrob_spec):
-    rows = competition_rows(pool_index, pool, redrob_spec)
+def test_competition_csv_is_valid(tmp_path, pool_index, pool, sample_spec):
+    rows = competition_rows(pool_index, pool, sample_spec)
     out = tmp_path / "team_test.csv"
     write_submission(rows, out)
     ids = set(pool_index.candidates["candidate_id"])

@@ -7,8 +7,8 @@ from engine.jd.documents import DocumentError, extract_text
 from engine.jd.parser import parse_job_description
 
 
-def test_redrob_jd_structure(redrob_spec):
-    s = redrob_spec
+def test_sample_jd_structure(sample_spec):
+    s = sample_spec
     mandatory = {r.id for r in s.requirements if r.importance == "mandatory"}
     assert {"embeddings_retrieval", "vector_search_infra", "python", "ranking_evaluation"} <= mandatory
     preferred = {r.id for r in s.requirements if r.importance == "preferred"}
@@ -26,10 +26,10 @@ def test_redrob_jd_structure(redrob_spec):
     assert "search_ranking" in s.role_families and "ml_engineering" in s.role_families
 
 
-def test_hackathon_note_is_ignored(redrob_spec):
-    # "Pinecone" / "RAG" appear in the closing note as *negative* examples; the
+def test_final_note_is_ignored(sample_spec):
+    # "Pinecone" / "RAG" appear in the closing "Final note" as *negative* examples; the
     # parser must not turn context sections into requirements.
-    srcs = " ".join(r.source_text or "" for r in redrob_spec.requirements)
+    srcs = " ".join(r.source_text or "" for r in sample_spec.requirements)
     assert "Final note" not in srcs and "keyword" not in srcs.lower()
 
 

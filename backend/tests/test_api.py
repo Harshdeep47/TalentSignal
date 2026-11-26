@@ -15,7 +15,7 @@ from app.core.config import Settings
 from app.main import create_app
 from factories import candidate, standard_pool
 
-REDROB_JD_PATH = "engine/resources/jobs/redrob_senior_ai_engineer.txt"
+JD_PATH = "engine/resources/jobs/sample_senior_ai_engineer.txt"
 
 
 def _jsonl(records) -> bytes:
@@ -67,7 +67,7 @@ def dataset(client, session):
 
 @pytest.fixture(scope="module")
 def spec(client, session, dataset):
-    text = open(REDROB_JD_PATH, encoding="utf-8").read()
+    text = open(JD_PATH, encoding="utf-8").read()
     r = client.post("/api/jd/parse", headers=H(session), json={"text": text, "dataset_id": dataset["id"]})
     assert r.status_code == 200
     return r.json()
@@ -142,7 +142,7 @@ def test_jd_parse_and_upload(client, session, spec):
     r = client.post("/api/jd/upload", headers=H(session), files={"file": ("jd.pdf", b"%PDF-1.4", "x")})
     assert r.status_code == 415
     assert client.post("/api/jd/parse", headers=H(session), json={"text": "short"}).status_code == 422
-    assert client.get("/api/jd/presets", headers=H(session)).json()[0]["id"] == "redrob_senior_ai_engineer"
+    assert client.get("/api/jd/presets", headers=H(session)).json()[0]["id"] == "sample_senior_ai_engineer"
 
 
 def test_run_results_paging_sort_filter(client, session, run):

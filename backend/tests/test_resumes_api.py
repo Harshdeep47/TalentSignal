@@ -21,7 +21,7 @@ from app.main import create_app
 
 ROOT = Path(__file__).resolve().parents[2]
 FIX = ROOT / "tests" / "fixtures" / "resumes"
-REDROB_JD_PATH = ROOT / "engine" / "resources" / "jobs" / "redrob_senior_ai_engineer.txt"
+JD_PATH = ROOT / "engine" / "resources" / "jobs" / "sample_senior_ai_engineer.txt"
 
 
 def H(session: str) -> dict:
@@ -198,7 +198,7 @@ def test_publish_and_rank_with_existing_engine(client, session, batch):
     ds = _wait(lambda: client.get(f"/api/datasets/{ds_id}", headers=H(session)).json(),
                lambda d: d["status"] in ("ready", "failed"))
     assert ds["status"] == "ready" and ds["n_candidates"] == 2, ds
-    text = REDROB_JD_PATH.read_text(encoding="utf-8")
+    text = JD_PATH.read_text(encoding="utf-8")
     spec = client.post("/api/jd/parse", headers=H(session), json={"text": text, "dataset_id": ds_id}).json()
     run = client.post("/api/runs", headers=H(session),
                       json={"dataset_id": ds_id, "spec": spec, "shortlist_size": None}).json()

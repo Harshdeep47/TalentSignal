@@ -1,0 +1,42 @@
+Job Description: Senior AI Engineer — Talent Matching
+Company: Northwind Talent Labs (fictional company; sample JD written for the TalentSignal project)
+Location: Pune or Noida, India (Hybrid — three office days a week) | Engineers willing to relocate are welcome
+Employment Type: Full-time
+Experience: 5–9 years
+
+About this sample
+This job description is original text written for TalentSignal's tests, demos and documentation. It describes a realistic search-and-matching role so that every part of the job-description parser is exercised.
+
+What you will do
+- Own the retrieval layer that decides which candidates a recruiter sees first for a new opening.
+- Turn vague hiring briefs into measurable relevance targets, then ship models that move them.
+- Keep the matching service fast and reliable as the candidate pool grows tenfold.
+- Review designs, mentor two engineers and write a meaningful share of the code yourself.
+
+Must-have qualifications
+- Production experience building semantic search with text embeddings (for example sentence-transformers or BGE models) for real users.
+- Hands-on work with a vector database or ANN index such as FAISS, Qdrant or OpenSearch, including hybrid search that mixes lexical and dense scores.
+- Strong Python; you write clear, tested code and review other people's code carefully.
+- Rigorous offline evaluation of rankings with NDCG or MRR, and experience running A/B tests to confirm offline gains online.
+
+Nice to have
+- Fine-tuning language models with LoRA or QLoRA for a domain-specific task.
+- Learning-to-rank experience with LambdaMART or LightGBM rankers.
+- Open source contributions to search, NLP or ML tooling.
+
+The ideal candidate
+Someone with 6-8 years in software, of which 4 or more years in applied machine learning, who has taken at least one ranking system from prototype to production and can explain the trade-offs they made.
+
+Who is not a fit
+- Careers spent entirely at consulting firms on short client engagements, with no product ownership.
+- Pure research roles where nothing was ever deployed to users.
+- Engineers who have not written production code for several years after moving into architecture.
+- A pattern of switching companies every year mainly to collect bigger titles.
+- Experience limited to computer vision, speech or robotics, with no text retrieval work.
+
+Logistics
+- Notice period of 30 days or less is preferred; we can buy out up to 30 days.
+- We cannot sponsor work visas for this role.
+
+Final note
+Please don't optimise your application for keyword matching. Listing Pinecone, RAG or the latest framework is not what we look for; show us the systems you built and how you knew they worked.

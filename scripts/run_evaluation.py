@@ -37,12 +37,21 @@ from engine.taxonomy import load_taxonomy  # noqa: E402
 from scripts._mem import PeakMemory  # noqa: E402
 
 REF = ROOT.parent / "reference material"
-JD_PATH = ROOT / "engine" / "resources" / "jobs" / "redrob_senior_ai_engineer.txt"
+# The evaluation measures the Redrob challenge task, so it uses the challenge JD from the local
+# challenge materials (not redistributed in this repository).
+JD_PATH = ROOT.parent / "reference material" / "job_description.docx"
 REPORT_MD = ROOT / "docs" / "reports" / "EVALUATION_REPORT.md"
 REPORT_JSON = ROOT / "docs" / "reports" / "evaluation_results.json"
 PLAIN_PREFIXES = ("Built systems that understand", "Shipped the personalization", "Designed the ranking layer",
                   "Owned the search and discovery")
 
+
+
+def _jd_text() -> str:
+    from engine.jd.documents import extract_text
+    if not JD_PATH.is_file():
+        sys.exit(f"Challenge JD not found: {JD_PATH} (job_description.docx from the Redrob challenge materials).")
+    return extract_text(JD_PATH.name, JD_PATH.read_bytes())
 
 def _top_ids(pool, k=100) -> list[str]:
     return pool.shortlist(k)["candidate_id"].tolist()
@@ -69,7 +78,7 @@ def main() -> None:
     candidates_file = REF / "candidates.jsonl"
     index_dir = args.index or ROOT / "artifacts" / "indexes" / file_fingerprint(candidates_file)
     ix = DatasetIndex(index_dir)
-    spec = parse_job_description(JD_PATH.read_text(encoding="utf-8"),
+    spec = parse_job_description(_jd_text(),
                                  known_locations=ix.candidates["location"].unique().tolist())
     labels = proxy_labels(ix)
     lab = labels.to_dict()

@@ -116,7 +116,7 @@ The **focus text** - used for holistic semantic matching - is the title, the fir
 
 ## A complete example: the reference job description
 
-Running the parser on the reference JD (`engine/resources/jobs/redrob_senior_ai_engineer.txt`) produces the following (verified by `tests/test_jd_parser.py`).
+Running the parser on the Redrob challenge JD produces the following. That JD belongs to the challenge organisers and is not redistributed in the repository: competition mode and the evaluation read it from the local challenge materials (`job_description.docx`). The tests use an original sample JD written for this project, `engine/resources/jobs/sample_senior_ai_engineer.txt`, whose parsed structure - the same must-haves, nice-to-haves, 5-9 year band, Pune/Noida hybrid location, 30-day notice and six exclusions - is checked by `tests/test_jd_parser.py`.
 
 | Requirement | Importance | Weight | Source sentence (shortened) |
 |---|---|---|---|

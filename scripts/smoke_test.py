@@ -15,7 +15,7 @@ import uuid
 
 import httpx
 
-JD = "engine/resources/jobs/redrob_senior_ai_engineer.txt"
+JD = "engine/resources/jobs/sample_senior_ai_engineer.txt"
 
 
 def main() -> None:

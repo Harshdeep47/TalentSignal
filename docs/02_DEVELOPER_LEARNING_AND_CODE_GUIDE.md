@@ -116,7 +116,7 @@ unique segments → `quality.json`, `meta.json`. Cancellation is checked every 2
 ### 5.2 Parse a JD
 ```python
 from engine.jd.parser import parse_job_description
-spec = parse_job_description(open("engine/resources/jobs/redrob_senior_ai_engineer.txt").read())
+spec = parse_job_description(open("engine/resources/jobs/sample_senior_ai_engineer.txt", encoding="utf-8").read())
 [(r.id, r.importance, r.weight, r.source_text[:40]) for r in spec.requirements]
 spec.experience, spec.location, [c.id for c in spec.constraints]
 spec.requirements[0].hard = True          # edit like any Pydantic model

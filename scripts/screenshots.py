@@ -54,7 +54,7 @@ def main() -> None:
     sid = str(uuid.uuid4())
     api = httpx.Client(base_url=args.base, headers={"X-Session-Id": sid}, timeout=300)
     ds = [d for d in api.get("/api/datasets").json() if d["shared"] and d["status"] == "ready"][0]
-    spec = api.post("/api/jd/parse", json={"text": (ROOT / "engine/resources/jobs/redrob_senior_ai_engineer.txt").read_text(encoding="utf-8"),
+    spec = api.post("/api/jd/parse", json={"text": (ROOT / "engine/resources/jobs/sample_senior_ai_engineer.txt").read_text(encoding="utf-8"),
                                            "dataset_id": ds["id"]}).json()
     run = api.post("/api/runs", json={"dataset_id": ds["id"], "spec": spec, "shortlist_size": 100}).json()
     while api.get(f"/api/runs/{run['id']}").json()["status"] != "ready":

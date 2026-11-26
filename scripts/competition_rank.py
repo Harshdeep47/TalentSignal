@@ -35,7 +35,9 @@ from engine.ranking.competition import competition_rows, validate_submission, wr
 from engine.ranking.scorer import score_pool  # noqa: E402
 from scripts._mem import PeakMemory  # noqa: E402
 
-DEFAULT_JD = ROOT / "engine" / "resources" / "jobs" / "redrob_senior_ai_engineer.txt"
+# The Redrob JD belongs to the challenge organisers and is not redistributed in this repository.
+# Competition mode reads it from the local challenge materials (or pass --jd).
+DEFAULT_JD = ROOT.parent / "reference material" / "job_description.docx"
 TIME_BUDGET_S = 300
 
 
@@ -78,6 +80,10 @@ def main() -> None:
     with PeakMemory() as mem, _NoNetwork():
         t1 = time.perf_counter()
         ix = DatasetIndex(index_dir)
+        if not args.jd.is_file():
+            sys.exit(f"Job description not found: {args.jd}\n"
+                     "Competition mode needs the Redrob challenge JD (job_description.docx from the "
+                     "challenge materials), which is not included in this repository. Pass --jd PATH.")
         jd_text = extract_text(args.jd.name, args.jd.read_bytes())
         spec = parse_job_description(jd_text, known_locations=ix.candidates["location"].unique().tolist())
         pool = score_pool(ix, spec)

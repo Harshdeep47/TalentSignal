@@ -75,7 +75,7 @@ flowchart TB
 
 ## How big is it?
 
-At the commit on the cover the repository contains about 4,600 lines of engine Python, 2,400 lines of backend Python, 3,500 lines of TypeScript/TSX (about 380 of them tests), 300 lines of CSS, 102 automated tests (91 Python, 11 frontend), and nine scripts plus a shared helper (`scripts/_mem.py`). Line counts include comments and docstrings. You can read every important file in a few days; this book tells you in which order.
+At the commit on the cover the repository contains about 4,600 lines of engine Python, 2,400 lines of backend Python, 3,500 lines of TypeScript/TSX (about 380 of them tests), 300 lines of CSS, 102 automated tests (91 Python, 11 frontend), and ten scripts plus a shared helper (`scripts/_mem.py`). Line counts include comments and docstrings. You can read every important file in a few days; this book tells you in which order.
 
 !!! tip "Recommended reading order of the source"
     `engine/jd/spec.py` → `engine/ranking/scorer.py` (top to bottom) → `engine/features/evidence.py` → `engine/preprocessing/index.py` → `backend/app/services/runs.py` → `backend/app/api/routes.py` → `frontend/src/pages/RunPage.tsx`. Each later part of this book follows roughly that order.

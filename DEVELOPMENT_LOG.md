@@ -94,3 +94,13 @@ Chronological record of decisions, measurements and corrections. Dates are 2026-
   per document (~20 ms per fresh file open on this Windows machine); records are now also stored in SQLite and
   publishing streams from there (396 records: 9.0 s → 0.03 s). Final numbers: `docs/RESUME_INGESTION.md`.
 - No OCR was implemented; scanned PDFs are reported as failed (`no_text_layer`), as documented.
+
+## Phase 11 - Public repository preparation
+- Audit before publishing: no datasets, databases, uploads, model weights, indexes, environments or secrets in
+  any commit (all generated state is git-ignored; secret and PII pattern scans clean; fixtures use fictional
+  people and `example.com` addresses).
+- The challenge's job description is no longer bundled. An original sample JD with the same parsed structure
+  drives tests, presets and demos; competition mode and the evaluation read the challenge JD from the local
+  challenge materials. Verified: the competition submission is byte-identical either way.
+- Screenshots retaken with the sample JD. Added `scripts/make_sample_dataset.py` (fictional pool) so the app can
+  be tried without external data. MIT license added; README rewritten for the expanded project.

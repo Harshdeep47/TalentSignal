@@ -1,8 +1,19 @@
 [
  {
+  "book": "01_TalentSignal_Complete_Technical_Handbook",
+  "pages": 69,
+  "words_prose": 22341,
+  "parts": 12,
+  "sections": 109,
+  "diagrams": 14,
+  "code_includes": 0,
+  "render_errors": [],
+  "problems": []
+ },
+ {
   "book": "02_TalentSignal_Developer_Code_Mastery_Guide",
-  "pages": 72,
-  "words_prose": 13278,
+  "pages": 71,
+  "words_prose": 13255,
   "parts": 12,
   "sections": 102,
   "diagrams": 8,
